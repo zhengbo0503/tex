@@ -3,7 +3,7 @@
 
 * Introduction
 
-*All the matrices we dealt are all *Hermitian positive definite!*
+*All the matrices we dealt are all *Hermitian positive definite*!  
 i.e. $A = A^*,\ \lambda_i(A) > 0$ for all $i$.
 
 In /Functions of Matrices/, Section 6.8.4, there is an algorithm for computing the square root of the Hermitian positive definite matrix.
