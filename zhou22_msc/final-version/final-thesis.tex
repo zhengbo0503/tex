@@ -1,0 +1,72 @@
+\documentclass[12pt,a4paper, MSc,twoside]{muthesis_2020}
+\input{clem.tex}
+\newcommand{\ift}{\text{ if }}
+\newcommand{\gnorm}[1]{\|{#1}\|}
+\renewcommand{\diag}{\mathrm{diag}}
+
+% \usepackage[a4paper]{geometry}
+
+\usepackage{blkarray}
+
+\begin{document}
+\title{A Mixed Precision Eigensolver Based on the Jacobi Algorithm}
+\author{Zhengbo Zhou}
+% Faculty of Life Sciences people should comment the next line out
+\school{Mathematics}
+\faculty{Science and Engineering}
+\def\wordcount{12597}
+
+\tablespagefalse
+% \figurespagefalse
+
+\beforeabstract
+
+The classic method for computing the eigendecomposition of a real symmetric matrix, the Jacobi algorithm, can be accelerated by using mixed precision arithmetic. The Jacobi algorithm is aiming to reduce the off-diagonal entries iteratively using Givens rotations. We investigate how to use the low precision to speed up this algorithm based on the approximate eigendecomposition in low precision. 
+
+We first study two different index choosing techniques, classical and cyclic-by-row, for the Jacobi algorithm. Numerical testing suggests that cyclic-by-row is more efficient. Then we discuss two different methods of orthogonalizing an almost orthogonal matrix: the QR factorization and the polar decomposition. For polar decomposition, we speed up the Newton iteration by using the one-step Schulz iteration. Based on numerical testing, using the polar decomposition approach (Newton--Schulz iteration) is not only faster but also more accurate than using the QR factorization. 
+
+A mixed precision algorithm for computing the eigendecomposition of a real symmetric matrix at double precision is provided. In doing so we compute the approximate eigenvector matrix $Q_\ell$ of $A$ in single precision using \texttt{eig} and \texttt{single} in MATLAB. We then use the Newton--Schulz iteration to orthogonalize the eigenvector matrix $Q_\ell$ into an orthogonal matrix $Q_d$ in double precision. Finally, we apply the cyclic-by-row Jacobi algorithm on $Q_d^TAQ_d$ and obtain the eigendecomposition of $A$. At this stage, we will see, from the testings, the cyclic-by-row Jacobi algorithm only need less than 10 iterations to converge by utilizing the quadratic convergence. The new mixed precision algorithm requires roughly 30\% of the time used by the Jacobi algorithm on its own.
+
+
+
+\afterabstract
+
+% The next part is optional; however it is a good place to thank your
+% supervisor and the people responsible for providing computer support ;-)
+\prefacesection{Acknowledgements}
+It is my pleasure to acknowledge the advices from my supervisors Prof. Nicholas J. Higham and Prof. Fran\c coise Tisseur. I wouldn't start my research in numerical linear algebra without their guidance and this thesis cannot be completed without their unlimited patience and insightful feedback.
+
+I would also like to thank all my friends for providing emotional support. In addition, two special thanks to Zeyu Wu, for his suggestion on coding aspects, and Anheng Xi, for the translation of several German articles from Jacobi and Sch{\"o}nhage. 
+
+Finally, I thank my parents, Guangyuan Zhou and Ling Li, for their unconditional love and for giving me the chance to study abroad. By standing upon the shoulders of my parents, I have seen further than them. 
+
+\afterpreface
+
+
+\pagestyle{fancy}
+
+\include{chap_intro.tex}
+\include{chap_norms.tex}
+\include{chap_jacobi.tex}
+\include{chap_orthog.tex}
+\include{chap_mixed.tex}
+\include{chap_concl.tex}
+
+% Bibliography
+
+\bibliographystyle{nj-plain.bst}
+\bibliography{bib.bib}
+
+%% Appendices 
+
+\appendix
+\include{appendices.tex}
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

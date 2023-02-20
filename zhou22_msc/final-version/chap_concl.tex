@@ -1,0 +1,11 @@
+\chapter{Conclusion and Further Work}
+
+We studied the classical Jacobi algorithm and the cyclic-by-row Jacobi algorithm and concluded that the cyclic-by-row Jacobi algorithm is much more efficient than the other one. Then, after performing implementation and testing on the QR factorization and the Newton--Schulz iteration, in order to orthogonalize an almost orthogonal matrix, we shall always use the Newton--Schulz iteration. Finally, we followed the preconditioning technique in~\ycite[2000]{DRMAC2000-preconditioner} and successfully propose the mixed precision algorithm~\ref{alg:jacobi-preconditioned} for the real symmetric eigenproblem. By utilizing the \inline{eig} function at single precision and preconditioning, we can save roughly 75\% of the time compared to applying the Jacobi algorithm alone.
+
+Further works of this thesis include:
+\begin{enumerate}
+  \item Rounding error analysis hasn't been conducted.
+  \item There exist more ways to orthogonalize an almost orthogonal matrix. For example, the Cholesky QR factorization.
+  \item Only one low precision level has been studied. These theories can apply to half precision as well. However, it requires more work on exploring a half precision version of \inline{eig} function in order to become faster than our Algorithm~\ref{alg:jacobi-preconditioned} which uses MATLAB built-in single precision. 
+  \item There are other ways that can be used to speed up the Jacobi algorithm. For example, the threshold Jacobi algorithm~\ycite[1965, Section~5.12]{wilk65} and the block Jacobi procedure~\ycite[2013, Section~8.5.6]{van2013mc}.
+\end{enumerate}

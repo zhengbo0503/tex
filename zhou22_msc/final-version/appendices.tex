@@ -1,0 +1,573 @@
+\chapter{Supplementary Explanation}
+\section{Algorithm~\ref{alg:jacobi-pair}}
+\label{app:algorithm-jacobi-pair}
+We have two different expressions for computing $t$ as shown in Table~\ref{tab:different-approaches-for-t}.
+\begin{table}[ht]
+  \centering 
+  \caption{Two different approaches for computing $t$ in Algorithm~\ref{alg:jacobi-pair}.}
+  \label{tab:different-approaches-for-t}
+  \begin{tabular}{ccc}
+    \toprule 
+    & Approach 1 & Approach 2 \\ \midrule  
+    $\tau \geq 0$ & $ t = - \tau + \sqrt{\tau^2 + 1}$ & $\displaystyle t = \frac{1}{\tau + \sqrt{1 + \tau^2}}$ \\ \midrule 
+    $\tau < 0 $ &$ t = - \tau - \sqrt{\tau^2 + 1}$ & 
+    $\displaystyle t = \frac{1}{\tau - \sqrt{1 + \tau^2}}$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+These two expressions are the same by simple calculation,
+\begin{equation}
+  t=\frac{1}{\tau+\sqrt{1+\tau^{2}}}=\frac{\tau-\sqrt{1+\tau^{2}}}{\left(\tau+\sqrt{1+\tau^{2}}\right)\left(\tau-\sqrt{1+\tau^{2}}\right)}=-\tau+\sqrt{1+\tau^{2}}.
+\end{equation}
+
+However, when we implement these into MATLAB, approach 1 will output $c = 1, s = 0$ for $a_{pq} \approx 10^{-8}$, and approach 2's output gives $s \neq 0$ even for $a_{pq} \approx 10^{-14}$. Namely, by using approach 1, the computed output is less accurate than the output from approach 2.
+
+\chapter{Supplementary Code}
+
+\section{Testing Matrices}\label{app:myrandsvd}
+By using the following code, we can generate a random real symmetric matrix with predefined condition number.
+\begin{lstlisting}
+function A = my_randsvd(n, kappa, mode)
+classname = 'double';
+if isempty(mode)
+  mode = 'Geo';
+end
+switch mode % Set up vector sigma of singular values.
+  case {'Geometric','geometric','Geo','geo'} 
+    % geometrically distributed singular values
+    factor = kappa^(-1/(n-1));
+    sigma = factor.^(0:n-1);
+  case {'Arithmatic', 'arithmatic', 'Ari', 'ari'}
+    % arithmetically distributed singular values
+    sigma = ones(n,1) - (0:n-1)'/(n-1)*(1-1/kappa);
+  otherwise
+    error(message('MATLAB:randsvd:invalidMode'));
+end
+sigma = cast(sigma,classname); signs = sign(rand(1,n-2)); 
+sigma(2:n-1) = sigma(2:n-1).* signs; 
+Q = qmult(n,1,classname);
+A = Q*diag(sigma)*Q';
+A = (A + A')/2;
+\end{lstlisting}
+
+\section{Full Jacobi Algorithm Code}\label{app:code-full-jacobi}
+\begin{lstlisting}
+function [V,D,counter] = jacobi_eig(Aini,tol,type,maxiter)
+%JACOBI_EIG   Jacobi Eigenvalue Algorithm
+%   [A,V,counter] = JACOBI_EIG(Aini,tol,type,maxiter) computes the eigen-
+%   decomposition of Aini, Aini = VDV', where V is orthogonal.
+%Input:
+%   Aini -------- Input matrix
+%   tol --------- Desired tolerance, usually 1.1e-16 (double precision)
+%   type -------- Type of Jacobi algorithm, either
+%                   * 'classical': For classical Jacobi algorithm
+%                   * 'cyclic': For cyclic-by-row Jacobi algorithm
+%   maxiter ----- Maximum number of sweep, specially for cyclic-by-row
+%               Jacobi algorithm. If undetermined, the maximum sweep will
+%               be set as 10 sweeps.
+%Output:
+%   V ------------ Orthogonal matrix
+%   D ------------ Resulting matrix after apply Jacobi algorithm.
+%   counter ------ Number of iteration
+if nargin <= 2, error('Not enough input arguments.');
+elseif nargin >= 5, error('Too many input arguments.');
+else
+  % select method, 'classical' or 'cyclic'
+  switch type
+    case {'classical','Classical'}
+      method = 1;
+    case {'cyclic','Cyclic'}
+      method = 2;
+    otherwise
+      error("The Jacobi algorithm avaliable are " + ...
+        "'classical' and 'cyclic'")
+  end
+  switch method
+    case 1
+      [V,D,counter] = jacobi_classical(Aini,tol);
+    case 2
+      switch nargin
+        case 4
+          maxiteration = maxiter;
+          [V,D,counter] = jacobi_cyclic(Aini,tol,maxiteration);
+        case 3
+          maxiteration = 10;
+          [V,D,counter] = jacobi_cyclic(Aini,tol,maxiteration);
+        otherwise
+          error('Not enough input arguments.');
+      end
+  end
+end
+end
+
+% classical Jacobi algorithm
+function [V,A,counter] = jacobi_classical(A,tol)
+counter = 0; n = length(A); V = eye(n); done_rot = true;
+tol1 = tol * norm(A);
+while done_rot
+  if isint(counter/(n*n)), A = (A + A')/2; end
+  done_rot = false; [p,q] = maxoff(A);
+  if abs(A(p,q)) >  tol1 * sqrt(abs(A(p,p) * A(q,q)))
+    counter = counter + 1; done_rot = true;
+    [c,s] = jacobi_pair(A,p,q);
+    J = [c,s;-s,c]; 
+    A([p,q],:) = J'*A([p,q],:);
+    A(:,[p,q]) = A(:,[p,q]) * J;
+    V(:,[p,q]) = V(:,[p,q]) * J;
+  else
+    A = diag(diag(A));
+    break;
+  end
+end
+end
+
+% Cyclic-by-row Jacobi algorithm
+function [V,A,iter] = jacobi_cyclic(A,tol,maxiter)
+n = length(A); V = eye(n); iter = 0; done_rot = true;
+while done_rot && iter < maxiter
+  done_rot = false;
+  for p = 1:n-1
+    for q = p+1:n
+      if abs(A(p,q)) > tol * sqrt(abs(A(p,p)*A(q,q)))
+        done_rot = true;
+        [c,s] = jacobi_pair(A,p,q);
+        J = [c,s;-s,c];
+        A([p,q],:) = J'*A([p,q],:);
+        A(:,[p,q]) = A(:,[p,q]) * J;
+        V(:,[p,q]) = V(:,[p,q]) * J;
+      end
+    end
+  end
+  if done_rot 
+    A = (A + A')/2; iter = iter + 1; 
+  else
+    A = diag(diag(A));
+    return;
+  end
+%   fprintf('off(A) = %d, sweep = %d\n', off(A), iter);
+end
+end
+
+% compute the Frobenius norm of the off-diagonal entries of the input matrix
+function num = off(A)
+n = length(A); A(1:n+1:n*n) = 0;
+num = norm(A,'fro');
+end
+
+% find the index of maximum off-diagonal entry of the input matrix A
+function [p,q] = maxoff(A)
+n = length(A); % dimension of matrix A
+A(1:n+1:n*n) = 0; A = abs(A); % clear the diagonal entries
+[val, idx1] = max(A);
+[~, q] = max(val); p = idx1(q);
+end
+
+% calculate the Givens rotation matrix's entries (c,s).
+function [c,s] = jacobi_pair(A,p,q)
+if A(p,q) == 0
+  c = 1; s = 0;
+else
+  tau = (A(q,q)-A(p,p))/(2*A(p,q));
+  if tau >= 0
+    t = 1/(tau + sqrt(1+tau*tau));
+  else
+    t = 1/(tau - sqrt(1+tau*tau));
+  end
+  c = 1/sqrt(1+t*t);
+  s = t*c;
+end
+end
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:classical-cyclic-compare}}\label{app:code-for-fig1}
+Figure~\ref{fig:classical-cyclic-compare} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all; format short e;
+condi1 = 100; tol = 2^(-53);
+rng(1,'twister');
+for n = 1e2:1e2:1e3
+  A = my_randsvd(n,condi1,'geo');
+  fprintf('iteration of n %d/%d\n', n/1e2, 1e3/1e2);
+  tic 
+  [V1,D1,iter1] = jacobi_eig(A,tol,'Classical');
+  t_classical_n(n/1e2) = toc;
+  tic
+  [V2,D2,iter2] = jacobi_eig(A,tol,'Cyclic',20);
+  t_cyclic_n(n/1e2) = toc;
+end
+nplot = 1e2:1e2:1e3;
+n = 2.5e2; 
+rng(1,'twister');
+for condi = 1e3:1e3:1e5
+  A = my_randsvd(n,condi,'geo');
+  fprintf('iteration of cond %d/%d...',condi/1e3,1e5/1e3);
+  tic
+  [V1,D1,iter1] = jacobi_eig(A,tol,'Classical');
+  t_classical_condi(condi/1e3) = toc;
+  tic
+  [V2,D2,iter2] = jacobi_eig(A,tol,'Cyclic',20);
+  t_cyclic_condi(condi/1e3) = toc;
+  fprintf('complete \n');
+end
+condiplot = 1e3:1e3:1e5;
+close all;
+subplot(1,2,1); hold off;
+plot(nplot,t_classical_n,'-^','LineWidth',2);
+hold on;
+plot(nplot,t_cyclic_n,'-^','LineWidth',2);
+xlabel('Dimension $(n)$');
+ylabel('Time Used (sec)');
+title('Fixed $\kappa(A) = 100$');
+legend('Classical Jacobi','Cyclic Jacobi','Location','northwest','FontSize',20);
+axis square
+subplot(1,2,2); hold off;
+plot(condiplot,t_classical_condi,'-^','LineWidth',1.5);
+hold on;
+plot(condiplot,t_cyclic_condi,'-^','LineWidth',1.5);
+xlabel('$\kappa(A)$');
+ylabel('Time Used (sec)');
+title('Fixed $n = 250$');
+legend('Classical Jacobi','Cyclic Jacobi','Location','northwest','FontSize',20);
+axis square; axis([0,1e5,0,25])
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:orthog}}\label{app:fig:orthog}
+Figure~\ref{fig:orthog} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all; format short e; 
+ud = 2^(-53); n = 1e2:1e2:3e3; condi = 100; rng(1,'twister');
+for i = 1:length(n)
+  fprintf('iteration %d/%d\n', i, length(n));
+  A = gallery('randsvd', n(i), -condi, 3);
+  [Q,~] = myqr(A); 
+  orthog(i) = norm(Q'*Q - eye(n(i)));
+end
+semilogy(n,orthog,'-^r',LineWidth=1.5); 
+hold on; semilogy(n, n.*ud, '-^k',LineWidth=1.5);
+legend("$\|Q^TQ - I_n\|$", '$nu_d$','Location','northwest');
+xlabel('Dimension $(n)$')
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:seconditer}}\label{app:seconditer}
+Figure~\ref{fig:seconditer} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all;
+n = 10:10:8e4;
+sq = (sqrt(1+n .* eps(single(1/2))) - 1).^4;
+sq_ref = n .* eps(1/2);
+plot(n,sq); hold on;
+plot(n,sq_ref,'--');
+plot(52400,5.81757e-12,'^k')
+legend('$\|X_2 - U\|_2$','$n\cdot u_d$','Location','northwest');
+xlabel('Dimension $(n)$')
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:nsorthog}}\label{app:fig:nsorthog}
+Figure~\ref{fig:nsorthog} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all; format short e; rng(1,'twister');
+ud = 2^(-53); 
+n = 1e2:1e2:3e3; condi = 1e2;
+for i = 1:length(n)
+  fprintf('Start iteration %d/%d,\n',i,length(n));
+  A = my_randsvd( n(i), condi, 'geo');
+  [Q,~] = eig(single(A)); Q = double(Q);
+  Q1 = newton_schulz(Q); 
+  orthog(i) = norm(Q1'*Q1 - eye(n(i)));
+end
+semilogy(n,orthog,'-^r',LineWidth=1.5); 
+hold on; 
+semilogy(n, n.*ud, '-^k',LineWidth=1.5);
+legend("$\|Q_d^*Q_d - I_n\|$",'$nu_d$','Location','northwest'); 
+xlabel('Dimension (n)'); title('Fix $\kappa(A) = 100$'); axis square
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:acccompare}}\label{app:fig:acccompare}
+Figure~\ref{fig:acccompare} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all; format short e; rng(1,'twister');
+ud = 2^(-53); n = 1e2:1e2:3e3; condi = 1e2;
+for i = 1:length(n)
+  fprintf('iteration %d/%d\n',i,length(n));
+  A = my_randsvd(n(i),condi,'geo');  
+  [Q,~] = eig(single(A)); Q = double(Q);
+  Q1 = newton_schulz(Q); 
+  [Q2,~] = qr(Q);
+  [Q3,~] = myqr(Q);
+  orthogns(i) = norm(Q1'*Q1 - eye(n(i)));
+  orthogqr(i) = norm(Q2'*Q2 - eye(n(i)));
+  orthogmyqr(i) = norm(Q3'*Q3 - eye(n(i)));
+end
+semilogy(n,orthogns,'-^',LineWidth=1.5); hold on; 
+semilogy(n,orthogqr,'-^',LineWidth=1.5); 
+semilogy(n,orthogmyqr,'-^',LineWidth=1.5); 
+legend("Newton-Schulz", ...
+  "\texttt{qr()} from MATLAB", ...
+  "My own QR code",...
+  'interpreter','latex', ...
+  'Location','northwest', ...
+  'FontSize',20); 
+xlabel('Dimension $(n)$');
+ylabel('$\|Q_d^*Q_d - I_n\|$')
+axis([0,3000,0,2e-14])
+axis square
+\end{lstlisting}
+
+
+\section{Code for Figure~\ref{fig:timecompare}}
+\label{app:fig:timecompare}
+Figure~\ref{fig:timecompare} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; close all; format short e; 
+ud = 2^(-53); n = 1e2:1e2:3e3; condi = 100;
+time_ns = zeros(length(n),1); time_qr = time_ns;
+rng(1,'twister'); % RNG
+for i = 1:length(n)
+  fprintf('iteration %d/%d\n',i,length(n));
+  A = my_randsvd(n(i),condi,'geo');
+  [Q,~] = eig(single(A)); Q = double(Q);
+  tic; [Q1] = newton_schulz(Q); time_ns(i) = toc;
+  tic; [Q2,~] = myqr(Q); time_qr(i) = toc;
+end
+semilogy(n,time_ns,'-^',LineWidth=1.5); hold on; 
+semilogy(n,time_qr,'-^',LineWidth=1.5); 
+legend('Newton--Schulz','QR Factorization','Location','northwest','interpreter','latex','FontSize',20); 
+xlabel('Dimension $(n)$')
+ylabel('Time (sec)')
+axis square  
+\end{lstlisting}
+
+
+\section{Mixed Precision Jacobi Algorithm Code}\label{app:mixed-precision-jacobi}
+\begin{lstlisting}
+function [Q,D,iter] = jacobi_precondi(A,tol,maxiter)
+%JACOBI_PRECONDI(A,tol,maxiter) compute the eigendecomposition of A using cyclic-by-row Jacobi algorithm with preconditioning.
+%% Preliminaries
+switch nargin
+  case 2, max_it = 10; case 3, max_it = maxiter;
+  otherwise, error('Please check the number of inputs');
+end
+[n,m] = size(A); 
+if m ~= n, error('Input matrix should be square matrix'), end
+if issymmetric(A) == 0, error('Input matrix should be symmetric'); end
+%% Eigendecomposition at single precision
+[Q_low,~] = eig(single(A)); Q_low = double(Q_low);
+%% Newton--Schulz iteration to orthogonalize
+Q_d = newton_schulz(Q_low);
+%% Cyclic-by-row Jacobi algorithm on preconditioned A
+A_cond = Q_d' * A * Q_d;
+[V,D,iter] = jacobi_eig(A_cond,tol,'Cyclic',max_it);
+%% Output
+Q = Q_d * V;
+\end{lstlisting}
+
+
+
+\section{Code for Figure~\ref{fig:precondition-accuracy} }\label{app:precondition-accuracy}
+Figure~\ref{fig:precondition-accuracy} can be regenerated using the following routine 
+\begin{lstlisting}
+clc; clear; format short e;
+n = 50:50:1e3; condi = 500; nplot = n;
+rng(1,'twister');
+for i = 1:length(n)
+  fprintf('iteration %d/%d...',i,length(n))
+  A_geo = my_randsvd(n(i),condi,'geo');
+  A_ari = my_randsvd(n(i),condi,'ari');
+  [V1,D1,iter1] = jacobi_precondi(A_geo,eps(1/2));
+  [V2,D2,iter2] = jacobi_precondi(A_ari,eps(1/2));
+  accuracy_n_geo(i) = norm(A_geo * V1 - V1 * D1);
+  accuracy_n_ari(i) = norm(A_ari * V2 - V2 * D2);
+  reference_n(i) = n(i) * norm(A_geo) * eps(1/2);
+  fprintf('complete\n');
+end
+%%
+subplot(1,2,1); hold off;
+semilogy(nplot,accuracy_n_geo,'-^'); hold on;
+semilogy(nplot,accuracy_n_ari,'-^');
+semilogy(nplot,nplot.*eps(1/2),'--k');
+xlabel('Dimension $(n)$'); 
+ylabel('$\|AQ - Q\Lambda\|_2/\|A\|_2$');
+legend('Geometric','Arithmetic','$nu_d\|A\|_2$','Location','southeast','FontSize',20);
+title('Fixed $\kappa(A) = 500$')
+axis square
+%%
+condiplot = 1e2:1e2:1e4; n = 5e2;
+for i = 1:length(condiplot)
+  fprintf('iteration %d/%d...',i,length(condiplot))
+  A_geo = my_randsvd(n,condiplot(i),'geo');
+  A_ari = my_randsvd(n,condiplot(i),'ari');
+  [V1,D1,iter1] = jacobi_precondi(A_geo,eps(1/2));
+  [V2,D2,iter2] = jacobi_precondi(A_ari,eps(1/2));
+  accuracy_condi_geo(i) = norm(A_geo * V1 - V1 * D1);
+  accuracy_condi_ari(i) = norm(A_ari * V2 - V2 * D2);
+  reference_n(i) = n * norm(A_geo) * eps(1/2);
+  fprintf('complete\n');
+end
+%%
+close all;
+subplot(1,2,1); hold off;
+semilogy(nplot,accuracy_n_geo,'-^'); hold on;
+semilogy(nplot,accuracy_n_ari,'-^');
+semilogy(nplot,nplot.*eps(1/2),'--k');
+xlabel('Dimension $(n)$'); 
+ylabel('$\|AQ - Q\Lambda\|_2/\|A\|_2$');
+legend('Geometric','Arithmetic','$nu_d$','Location','southeast','FontSize',20);
+title('Fixed $\kappa(A) = 500$')
+axis square
+subplot(1,2,2); hold off;
+semilogy(condiplot,accuracy_condi_geo,'-^'); hold on;
+semilogy(condiplot,accuracy_condi_ari,'-^');
+semilogy(condiplot,reference_n,'--k'); 
+xlabel('$\kappa(A)$'); 
+ylabel('$\|AQ - Q\Lambda\|_2/\|A\|_2$');
+legend('Geometric','Arithmetic','$nu_d$','Location','northeast','FontSize',20);
+title('Fixed $n = 500$')
+axis square; axis([0,1e4,0,8e-14]);
+\end{lstlisting}
+
+\section{Code for Figure~\ref{p3:fig:approx-eig-test}}
+\label{p3:sec:figure1}
+\begin{lstlisting}
+clc; clear all; close all; figure(1);
+n = [50,250,500];
+for i = 1:3
+  subplot(2,2,i)
+  testing_1(n(i));
+  if i == 1
+    axis([0,1e4,0,6e-6]);
+    title('Fixed $n=50$');
+  elseif i == 2
+    axis([0,1e4,0,3.8e-5]);
+    title('Fixed $n = 250$');
+  elseif i == 3
+    axis([0,1e4,0,8e-5]);
+    title('Fixed $n = 500$');
+  end
+  pause(0.1);
+end
+subplot(2,2,4); hold off
+condi = 1e2; n1 = 10:10:1e3; offA = zeros(1,length(n1)); rng(1,'twister');
+for i = 1:length(n1)
+  fprintf('start %d/%d\n',i,length(n1));
+  A_geo = my_randsvd(n1(i),condi,'geo');
+  A_ari = my_randsvd(n1(i),condi,'ari');
+  [Q1,~] = eig(single(A_geo)); Q1 = double(Q1);
+  Q1_d = newton_schulz(Q1);
+  offA_geo(i) = off(Q1_d' * A_geo * Q1_d)/norm(A_geo);
+  [Q2,~] = eig(single(A_ari)); Q2 = double(Q2);
+  Q2_d = newton_schulz(Q2);
+  offA_ari(i) = off(Q2_d' * A_ari * Q2_d)/norm(A_ari);
+end
+semilogy(n1,offA_geo); hold on;
+semilogy(n1,offA_ari);
+semilogy(n1,n1 .* double(eps(single(1/2))),'--k');
+legend('Geometric','Arithmetic','$nu_\ell$','Location','southeast');
+xlabel('$\kappa(A)$'); ylabel('off$(A_{cond})/\|A\|_2$','Interpreter','latex');
+set(gca,'FontSize',20);
+axis square;
+title('Fixed $\kappa(A) = 100$')
+function testing_1(n)
+condi = 10:10:1e4; offA_geo = zeros(1,length(condi)); offA_ari = offA_geo;
+rng(1,'twister');
+for i = 1:length(condi)
+  fprintf('start %d/%d\n',i,length(condi));
+  A_geo = my_randsvd(n,condi(i),'geo');
+  [Q1,~] = eig(single(A_geo)); Q1 = double(Q1);
+  Q1_d = newton_schulz(Q1);
+  offA_geo(i) = off(Q1_d' * A_geo * Q1_d)/norm(A_geo);
+  A_ari = my_randsvd(n,condi(i),'ari');
+  [Q2,~] = eig(single(A_ari)); Q2 = double(Q2);
+  Q2_d = newton_schulz(Q2);
+  offA_ari(i) = off(Q2_d' * A_ari * Q2_d)/norm(A_ari);
+end
+semilogy(condi,offA_geo,'LineWidth',1.5); hold on;
+semilogy(condi,offA_ari);
+semilogy(condi,n * double(eps(single(1/2))) * ones(1,length(condi)),'--k','LineWidth',1.5);
+legend('Geometric','Arithmetic','$nu_\ell$');
+xlabel('$\kappa(A)$'); ylabel('off$(A_{cond})/\|A\|_2$','Interpreter','latex');
+set(gca,'FontSize',20);
+axis square;
+end
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:typical-sweep}}\label{app:typical-sweep}
+Figure~\ref{fig:typical-sweep} can be regenerated using the following routine
+\begin{lstlisting}
+clear; clc; rng(1,'twister');
+n = 50:50:1e3; condi = 500; nplot = n;
+for i = 1:length(n)
+  A_geo = my_randsvd(n(i),condi,'geo');
+  [V1,D1,iter1] = jacobi_precondi(A_geo,eps(1/2));
+  iteration_n_geo(i) = iter1;
+  A_ari = my_randsvd(n(i),condi,'ari');
+  [V2,D2,iter2] = jacobi_precondi(A_ari,eps(1/2));
+  iteration_n_ari(i) = iter2;
+  fprintf('iteration %d/%d complete\n',i,length(n));
+end
+condiplot = 1e2:1e2:1e4; n = 5e2;
+for i = 1:length(condiplot)
+  A_geo = my_randsvd(n,condiplot(i),'geo');
+  [V1,D1,iter1] = jacobi_precondi(A_geo,eps(1/2));
+  iteration_condi_geo(i) = iter1;
+  A_ari = my_randsvd(n,condiplot(i),'ari');
+  [V2,D2,iter2] = jacobi_precondi(A_ari,eps(1/2));
+  iteration_condi_ari(i) = iter2;
+  fprintf('iteration %d/%d complete\n',i,length(condiplot));
+end
+close all
+subplot(1,2,1);
+semilogy(nplot,iteration_n_geo,'-^'); hold on;
+semilogy(nplot,iteration_n_ari,'-^');
+xlabel('Dimension $(n)$');
+ylabel('Number of iterations til converge');
+title('Fixed $\kappa(A) = 500$')
+legend('Geometric','Arithmetic','Location','northeast');
+axis square; axis([0,1000,0,4]);
+subplot(1,2,2);
+semilogy(condiplot,iteration_condi_geo,'-^'); hold on;
+semilogy(condiplot,iteration_condi_ari,'-^');
+legend('Geometric','Arithmetic','Location','northeast');
+xlabel('$\kappa(A)$'); 
+ylabel('Number of iterations til converge');
+title('Fixed $n = 500$')
+axis square; axis([0,1e4,0,5]);
+\end{lstlisting}
+
+\section{Code for Figure~\ref{fig:time-improvement}}\label{app:time-improvement}
+Figure~\ref{fig:time-improvement} can be regenerated using the following routine
+\begin{lstlisting}
+clc; clear; close all; rng(1,'twister');
+n = 1e2:1e2:5e2; condi = 500; tol = 2^(-53);
+for i = 1:length(n)
+  Ag = my_randsvd(n(i),condi,'geo');
+  Aa = my_randsvd(n(i),condi,'ari');
+  tic; [V1,D1,iter1] = jacobi_precondi(Ag,tol); 
+  t_precond_g(i) = toc;
+  tic; [V2,D2,iter2] = jacobi_eig(Ag,tol,'Cyclic'); 
+  t_normal_g(i) = toc;
+  tic; [Va1,Da1,iter1] = jacobi_precondi(Aa,tol); 
+  t_precond_a(i) = toc;
+  tic; [Va2,Da2,iter2] = jacobi_eig(Aa,tol,'Cyclic'); 
+  t_normal_a(i) = toc;
+  fprintf('Iteration %d/%d complete\n',i,length(n));
+end
+subplot(1,2,1)
+plot(n,t_normal_g,'-^');
+hold on;
+plot(n,t_precond_g,'-^');
+xlabel('Dimension $(n)$')
+ylabel('Time Used (sec)')
+legend('Without Preconditioning', 'With Preconditioning','Location','northwest');
+title('Geometrically distributed test matrices')
+axis square  
+subplot(1,2,2)
+plot(n,t_normal_a,'-^');
+hold on;
+plot(n,t_precond_a,'-^');
+xlabel('Dimension $(n)$')
+ylabel('Time Used (sec)')
+legend('Without Preconditioning', 'With Preconditioning','Location','northwest');
+title('Arithmetically distributed test matrices')
+axis square  
+\end{lstlisting}

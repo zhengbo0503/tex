@@ -1,0 +1,389 @@
+\chapter{Matrix Norms, Orthogonal Matrices and Singular Value Decomposition}\label{chap:norms}
+
+In this chapter, we will introduce several concepts that are important for our analysis. In the first section, vector norms and matrix norms will be presented. Then we will discuss an important class of matrices, orthogonal matrices. Finally, a crucial decomposition, singular value decomposition, will be discussed. 
+
+\section{Norms}\label{sec:norm}
+
+Matrix norms are essential for matrix algorithms. For example, the matrix norms provide a way of measuring the difference between two matrices and help us to check if we have the desired solution in finite arithmetic. In this section, we will do our demonstrations in the real world but the complex case is similar. Also, we will only introduce the norm for square matrices, but these theories are all applicable to any general matrices with careful attention to matching dimensions.
+
+\subsection{Vector Norms}\label{sec:vector-norm}
+
+Before introducing matrix norm, a brief illustration of vector norm is necessary. 
+\begin{definition}
+  [Vector Norm] 
+  A vector norm on $\R\n$ is a function $\gnorm : \R\n \to \R$ such that it satisfies the following properties
+  \begin{enumerate}
+    \item $\gnorm{x} \geq 0$ for all $x\in\R\n$.
+    \item $\gnorm{x} = 0$ if and only if $x = 0$.
+    \item $\gnorm{\lambda x} = \abs{\lambda} \gnorm{x}$ for all $\lambda \in \R$ and $x \in \Rn$.
+    \item $\gnorm{x + y} \leq \gnorm{x} + \gnorm{y}$ for all $x,y\in \Rn$.
+  \end{enumerate}
+\end{definition}
+
+\begin{example}
+  A useful class of vector norm is the $p$-norm 
+  \begin{equation}\notag
+    \gnorm{x}_p = \left({\sum_{i = 1}^n \abs{x_i}^p}\right)^{1/p},\quad p\geq 1.
+  \end{equation}
+  One particular example of the $p$-norm is the Euclidean norm or simply $2$-norm defined by taking $p=2$
+  \begin{equation}\notag
+    \norm{x} =  \left({\sum_{i = 1}^n \abs{x_i}^2}\right)^{1/2} = \sqrt{x\tp x}.
+  \end{equation}
+  The latter equality is obvious.
+\end{example}
+
+\subsection{Matrix Norms}
+
+Let us denote $\R\nn$ as $n\times n$ matrices with real entries.
+
+\begin{definition}
+  [Matrix Norm]
+  A matrix norm on $\R\nn$ is a function $\gnorm{\cdot}:\R\nn \to \R$ satisfying the following properties 
+  \begin{enumerate}
+    \item $\gnorm{A} \geq 0$ for all $A\in\R\nn$.
+    \item $\gnorm{A} = 0$ if and only if $A = 0$.
+    \item $\gnorm{\lambda A} = \abs{\lambda}\gnorm{A}$ for all $\lambda \in \R$ and $A\in\R\nn$.
+    \item $\gnorm{A + B} \leq \gnorm{A} + \gnorm{B}$ for all $A,B \in \R\nn$. 
+  \end{enumerate}
+\end{definition}
+
+One simple matrix norm is the Frobenius norm 
+\begin{equation}
+  \gnorm{A}_F = \left(\sum_{i = 1}^n \sum_{j = 1}^n \abs{a_{ij}}^2 \right)^{1/2} = (\tr(A\tp A))^{1/2}.
+\end{equation}
+We will use the Frobenius norm intensively in the next section on the Jacobi algorithm.
+
+Another important class of matrix norms is called induced norms or subordinate norms. Given a vector norm defined in Section~\ref{sec:vector-norm}, the corresponding induced norm is defined as 
+\begin{equation}\notag
+  \gnorm{A} = \max_{\gnorm{x} = 1}\gnorm{Ax}.
+\end{equation}
+
+\begin{example}
+  The matrix 2-norm is induced by the vector 2-norm. From the definition of the induced norm, 
+  \begin{equation}\notag
+      \norm{A} = \max_{\norm{x} = 1} \norm{Ax} = \sqrt{x_\mu\tp A\tp A x_\mu} = \mu,
+  \end{equation}
+  for some positive number $\mu$, and $x_\mu$ is the corresponding chosen $x$. Since $\norm{x} = \sqrt{x\tp x}$ for $x\in\Rn$, hence we have $x_\mu\tp A\tp A x_\mu = \mu^2$. Also, by $\norm{x_\mu} = x_\mu\tp x_\mu = 1$, we can pre-multiply $x_\mu$ at both sides and we have  $A\tp A x_\mu = \mu^2 x_\mu$ which implies $\mu$ is the eigenvalue of $A\tp A$. In case we are choosing $x_\mu$ such that $\mu$ is maximum, therefore we have the definition of the matrix 2-norm 
+  \begin{equation}\label{eq:example-2.4}
+    \norm{A} = \sqrt{\l_{\max}(A\tp A)} = \sigma_1,
+  \end{equation} 
+  where $\lambda_{\max}(A)$ and $\sigma_1$ denotes the largest eigenvalue and singular value of $A$. 
+\end{example}
+
+\begin{definition}
+  [Consistent Norms]
+  A norm is consistent if it is submultiplicative
+  \begin{equation}
+    \gnorm{AB} \leq \gnorm{A} \gnorm{B},
+  \end{equation}
+  for all $A,B$ such that the product $AB$ defines.
+\end{definition}
+
+\begin{example}
+  The Frobenius norm and all subordinate (induced) norms are consistent. This is useful for constructing upper bounds.
+\end{example}
+
+\section{Orthogonal Matrices}
+
+Recall the definition of the orthogonal matrix,
+\begin{definition}
+  [Orthogonal Matrices]
+  A matrix $Q\in\R\nn$ is said to be orthogonal if
+  \begin{equation}\notag
+    Q\tp Q = QQ\tp = I_n,
+  \end{equation}
+  where $I_n$ denotes the identity matrix of size $n$. If $Q\in\C\nn$, then we call $Q$ unitary rather than orthogonal and we denote its conjugate transpose as $Q\ctp$.
+\end{definition}
+
+\begin{theorem}
+  The vector 2-norm is invariant under orthogonal transformations.
+\end{theorem}
+
+\begin{proof}
+  Given an orthogonal matrix $Q\in\R\nn$ and any vector $x\in\Rn$, we have 
+  \begin{equation}\notag
+    \norm{Qx} = \sqrt{x\tp Q\tp Q x} = \sqrt{x\tp x} = \norm{x},
+  \end{equation}
+  which proves the theorem.
+\end{proof}
+
+\begin{theorem} 
+  \label{thm:matrix-invariant-norm}
+  The Frobenius norm and matrix 2-norm are the orthogonally invariant norm. Namely, the following norm equality holds for these two norms
+  \begin{equation}\notag
+    \gnorm{UAV} = \gnorm{A},\quad \text{$A\in\R\nn$, $U$ and $V$ are orthogonal.}
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+By the definition of the Frobenius norm, we have 
+  \begin{equation}
+      \label{eq:thm2-2-proof1}
+      \begin{aligned}
+          \|UAV\|_F^2 &= \tr\big(U AVV\tp A\tp U\tp \big) = \tr\big( U AA\tp U\tp\big).
+      \end{aligned}
+  \end{equation}
+  By the properties $\tr(AB) = \tr(BA)$, \eref{eq:thm2-2-proof1} simplifies to 
+  \begin{equation}
+      \label{eq:thm2-2-proof2}
+      \|U AV\|_F^2 = \tr\big(A\tp U\tp U A\big) = \tr\big(A\tp A\big) = \tr\big(AA\tp\big) = \|A\|_F^2.
+  \end{equation}
+  Hence we finished the proof for the Frobenius norm.
+
+  By the definition of the matrix 2-norm, we have 
+  \begin{equation}\notag
+    \norm{UAV}^2 = \l_{\max}(V\tp A\tp U\tp UAV) = \l_{\max}({V\tp A\tp AV}).
+  \end{equation}
+  Notice that if $V$ is orthogonal, then $A\tp A$ and $V\tp A\tp A V$ share the same eigenvalues. Therefore $\l_{\max}(V\tp A\tp AV) = \l_{\max} (A\tp A)$, therefore we have 
+  \begin{equation}\notag
+    \norm{UAV}^2 = \lambda_{\max}(A\tp A) = \norm{A}^2.
+  \end{equation}
+  Hence we proved the theorem.
+\end{proof}
+
+\subsection{Givens Rotations}\label{sec:givens-rotation}
+
+\begin{definition}
+  [Givens rotation]
+  A Givens rotation has the form 
+  \begin{equation}\label{eq:givens}
+      G(i, k, \theta)=
+      \begin{blockarray}{cccccccc}
+      \begin{block}{[ccccccc]c}
+          1 & \cdots & 0 & \cdots & 0 & \cdots & 0 &  \\
+          \vdots & \ddots & \vdots & & \vdots & & \vdots& \\
+          0 & \cdots & c & \cdots & s & \cdots & 0 & i\\
+          \vdots & & \vdots & \ddots & \vdots & & \vdots &  \\
+          0 & \cdots & -s & \cdots & c & \cdots & 0 & k\\
+          \vdots & & \vdots & & \vdots & \ddots & \vdots & \\
+          0 & \cdots & 0 & \cdots & 0 & \cdots & 1 & \\
+      \end{block}
+       &  & i &  & k &  &  \\
+      \end{blockarray},
+  \end{equation}
+  where $c = \cos(\theta)$ and $s = \sin(\theta)$ for some $\theta$.
+\end{definition}
+
+Given a vector $y\in\R^n$ and a Givens rotation $G(i,j,\theta)$, the product $G(i,j,\theta) y$ rotate $y$ through $\theta$ radians clockwise in the $(i,j)$ plane. Hence it is obvious that we can make either $y_i$ or $y_j$ become zero by manipulating $\theta$. This idea will be utilized in Section~\ref{sec:Deriv and Conver} in order to eliminate $(i,j)$th entry of a symmetric matrix.
+
+\begin{proposition}
+  Givens rotations are orthogonal.
+\end{proposition}
+\begin{proof}
+  Let $G = G(i,k,\theta)$ be a Givens rotation. By using the trigonometric identity $\cos^2(\theta) + \sin^2(\theta) = 1$, we have the following 
+  \begin{equation}\label{eq:1.2}
+      G_{ik}=G([i,k],[i,k]) = 
+      \begin{bmatrix}
+          c & s \\
+          -s & c 
+      \end{bmatrix}
+      \quad \to \quad 
+      G_{ik}\tp G_{ik} = 
+      \begin{bmatrix}
+          1 & 0 \\
+          0 & 1
+      \end{bmatrix}
+      = G_{ik}G_{ik}\tp .
+  \end{equation}
+  We can calculate the following matrix products $G\tp G$ and $GG\tp$ using \eref{eq:1.2}.
+  \begin{equation}\notag
+      G\tp G = GG\tp = I.
+  \end{equation}
+  Hence $G$ is orthogonal.
+\end{proof}
+
+Notice that the matrix $G(p,q,\theta)$ can be written as
+\begin{equation}\label{eq:1.4}
+  \begin{aligned}
+      G(p,q,\theta) = [e_1,\dots,e_{p-1},e_{pq},e_{p+1},\dots,e_{q-1},e_{qp},e_{q+1},\dots,e_{n}],
+  \end{aligned}
+\end{equation}
+where $e_i$ is the $i$th column of the $n\times n$ identity matrix if $i\neq p,q$ and $e_{pq}$ and $e_{qp}$ are defined as 
+\begin{equation}\label{eq:1.5}
+  [e_{pq}]_k = \begin{cases}
+      c & \ift k = p \\
+      -s & \ift k = q\\
+      0 & \ift k \neq p,q
+  \end{cases}, \qquad 
+  [e_{qp}]_k = \begin{cases}
+      s & \ift k = q \\
+      c & \ift k = p\\
+      0 & \ift k \neq p,q
+  \end{cases}.
+\end{equation}
+
+\begin{proposition}\label{prop:1.3}
+  Suppose $A\in \R\nn$ and $G(p,q,\theta)$ is a Givens rotation. If we define $B$ as $$B = G(p,q,\theta)\tp AG(p,q,\theta),$$ 
+  then $B$ and $A$ are the same except in rows and columns $p$ and $q$.
+\end{proposition}
+
+\begin{proof} 
+  Using the notations in \eref{eq:1.4} and \eref{eq:1.5}, matrix $B$ can be written as
+  \begin{equation}\notag
+      \begin{aligned}
+          B =
+          \begin{bmatrix}
+              e_{1}\tp A e_{1} & \cdots & e_{1}\tp A e_{p q} & \cdots & e_{1}\tp A e_{q p}  &\cdots & e_{1}\tp A e_{n} \\
+              \vdots &  & \vdots &  & \vdots  &  & \vdots \\
+              e_{pq}\tp A e_{1} & \cdots & e_{pq}\tp A e_{p q} & \cdots & e_{pq}\tp A e_{q p}  &\cdots & e_{pq}\tp A e_{n} \\
+              \vdots &  & \vdots &  & \vdots  &  & \vdots \\
+              e_{qp}\tp A e_{1} & \cdots & e_{qp}\tp A e_{p q} & \cdots & e_{qp}\tp A e_{q p}  &\cdots & e_{qp}\tp A e_{n} \\
+              \vdots &  & \vdots &  & \vdots  &  & \vdots \\
+              e_{n}\tp A e_{1} & \cdots & e_{n}\tp A e_{p q} & \cdots & e_{n}\tp A e_{q p}  &\cdots & e_{n}\tp A e_{n} \\
+          \end{bmatrix}.
+      \end{aligned}
+  \end{equation}
+  Hence $B_{ij} = e_i\tp Ae_j = A_{ij}$ if $i,j \neq p,q$ and for $i,j = p$ or $q$, $B_{ij}\neq A_{ij}$ in general.
+\end{proof}
+
+\subsection{Householder Transformations}\label{sec:Householder}
+
+Another important class of orthogonal matrix is the Householder transformations. Unlike the Givens rotation which replaces a specific entry into zero, Householder transformation can change multiple entries into zeros. In this section, we will first discuss how this matrix can set entries to zeros and then a MATLAB implementation will be present together with numerical testing.
+
+\begin{definition}
+  A Householder transformation (synonyms are Householder matrix and Householder reflector) is an $n\times n$ matrix $P$ of the form
+  \begin{equation}\notag
+      P = I - 2\frac{vv\tp}{v\tp v},\quad 0\neq v\in\R^n.
+  \end{equation}
+  The vector $v$ is the Householder vector.
+\end{definition}
+
+Householder transformation has useful properties,
+\begin{enumerate}
+  \item Symmetry:
+  \begin{equation}\notag
+      P\tp = I\tp - \frac{2}{v\tp v}(vv\tp)\tp = I - \frac{2}{v\tp v}vv\tp = P.
+  \end{equation}
+  \item Orthogonality:
+  \begin{equation}\notag
+      \begin{aligned}
+          P\tp P = PP\tp = PP & = \left(I - \frac{2}{v\tp v}vv\tp\right)\left(I - \frac{2}{v\tp v}vv\tp\right)\\
+          & = I-\frac{4}{v\tp v}vv\tp + \frac{4}{(v\tp v)^2}vv\tp vv\tp\\
+          & = I - \frac{4}{v\tp v}vv\tp + \frac{4}{v\tp v}vv\tp = I.
+      \end{aligned}
+  \end{equation}
+\end{enumerate}
+
+\subsubsection{Transforming a Vector}
+The Householder transformation can be used to zero components of a vector. Suppose we have a vector $x\in\R^n$ and we want
+\begin{equation}\label{eq.2.6}
+  y = Px = \left(I - \frac{2}{v\tp v}vv\tp\right) x = x - \frac{2v\tp x}{v\tp v}v
+\end{equation}
+where $y(2:n) = {0}$. Since $P$ is orthogonal, we require $\norm{y} = \norm{x}$, hence $y = \pm \norm{x}e_1$ where $e_1$ is the first column of the $n\times n$ identity matrix. We can rewrite $v$ as
+\begin{equation}\notag
+  v = \frac{1}{\alpha} x - \frac{1}{\alpha} y, \quad \alpha = \frac{2v\tp x}{v\tp v}v,
+\end{equation}
+and since $P$ is independent of the scaling of $v$, hence for $x\neq y$, we can set $\alpha = 1$ and we can choose $v = x -y$. We can check our choice by computing $Px$:
+Firstly, we can compute $v\tp x$ and $v\tp v$
+\begin{equation}\notag
+  v\tp x = (x\tp - y\tp) x=x\tp x - y\tp x,\quad v\tp v = (x\tp - y\tp)(x-y) = 2x\tp x - 2x\tp y.
+\end{equation}
+Substitute these two components into \eref{eq.2.6}
+\begin{equation}\notag
+  \begin{aligned}
+      Px & = x - \frac{2v\tp x}{v\tp v}v = x - v = x - (x-y) = y.
+  \end{aligned}
+\end{equation}
+
+The choice of the sign of $y$ depends on the sign of the first entry of $x$. Suppose $x$ is dominant by its first entry, namely $x$ is close to a multiple of $e_1$, then $v = x - \sign{x_1}\norm{x}e_1$ can have a small norm due to cancellation and this may result a large relative error in $2/(v\tp v)$. This relative error can be avoided by setting
+\begin{equation}\notag
+  v = x + \sign{x_1}\norm{x}e_1
+\end{equation}
+as suggested in many textbooks, such as \ycite[2002, Section~19.1] {high:ASNA2} and \ycite[2013, Section~5.1.3]{van2013mc}. Then we get
+\begin{equation}\label{eq.Px}
+  Px = y = x - v = -\sign{x_1}\norm{x}e_1.
+\end{equation}
+
+Given $x\neq {0} \in\R^n$, instead of generating the Householder matrix $P$ such that it satisfies \eref{eq.Px}, we should only generate the Householder vector $v$ and the coefficient $\beta = 2/(v\tp v)$. The benefit of doing so can be seen from the Householder QR factorization algorithm in section~\ref{subsec.houseQR}. Based on the previous discussion, we can conclude these into  Algorithm~\ref{alg.house}.
+
+\begin{algorithm}[ht]
+\caption{Given $x\neq{0} \in\R^n$, this algorithm computes $v\in\R^n$ and $\beta\in\R$ such that $P = I_n - \beta vv\tp$ is orthogonal and $Px = -\sign{x_1} \norm{x}e_1$.}
+\label{alg.house}
+\begin{algorithmic}[1]
+  \State Form $\sigma = x(2:n)\tp x(2:n),\ v = [1,x(2:n)\tp]\tp$
+  \State{Calculate $\mu = \norm{x} =  \sqrt{x_1^2 + \sigma}$}
+  \If{$x_1 \geq 0$}
+      \State{$v_1 = x_1 + \mu$}
+  \Else
+      \State{$v_1 = x_1 - \mu = -\sigma/(x_1 + \mu)$}
+  \EndIf
+  \State {$\beta = 2/(v_1^2 + \sigma)$}
+\end{algorithmic}
+\end{algorithm}
+
+Notice that, line 6 rewrites the form of $v_1$ to avoid subtractive cancellation as suggested by \ycite[2013, Algorithm~5.1.1]{van2013mc}
+\begin{equation}\notag
+  v_1 = x_1 - \mu = \frac{(x_1 - \mu)(x_1 +\mu)}{(x_1 + \mu)} = \frac{x_1^2 - (x_1^2 + \sigma)}{x_1 + \mu} = \frac{-\sigma}{x_1 + \mu}.
+\end{equation}
+
+\subsubsection{Implementation and Testing}
+
+During the \mat~implementation, we do not need to create a new vector $v$. It is sufficient to just overwrite the values of $x$ since the only difference between $v$ and $x$ in Algorithm~\ref{alg.house} is the first entry of these two vectors.
+
+\begin{lstlisting}
+function [x,b] = house(x)
+n = length(x); sigma = x(2:n)'*x(2:n); 
+mu = sqrt(x(1)*x(1) + sigma);
+if x(1) >= 0, x(1) = x(1) + mu;
+else, x(1) = -sigma/(x(1) + mu); end
+b = 2/(x(1)*x(1) + sigma); 
+end
+\end{lstlisting}
+
+To test the above function, we first generate a vector $x\in\R^5$ using \inline{randn(5,1)}. 
+\begin{lstlisting}
+x' = 
+  -1.3499e+00, 3.0349e+00, 7.2540e-01, -6.3055e-02, 7.1474e-01
+\end{lstlisting}
+Using the above function and call \inline{[v,b] = house(x)}, we can construct $P$ using the formula $P = I_n - \beta vv\tp$. Then we examine the product $Px$ and we have 
+\begin{lstlisting}
+(P * x)' = 
+  3.4748e+00            0   1.7694e-16  -9.1073e-18   1.1102e-16
+\end{lstlisting}
+The result satisfies our expectations. 
+
+The Householder transformation can quickly introduce zeros into a vector using orthogonal matrices and this is useful when we study the QR factorization.
+
+\section{Singular Value Decomposition}\label{sec:svd}
+
+\begin{theorem}
+    [Singular value decomposition]
+    \label{thm.svd}
+    If $A\in\R\mn$, $m\geq n$, then there exists two orthogonal matrices $U\in\R^{m\times m}$ and $V\in\R\nn$ such that 
+    \begin{equation}\label{eq.svd}
+        A = U\Sigma V\tp,\quad \Sigma = \diag(\sigma_1,\dots,\sigma_p)\in\R\mn,\quad p = \min\{m,n\},
+    \end{equation}
+    where $\sigma_1,\dots,\sigma_p$ are all non-negative and arranged in non-ascending order. We denote~\eqref{eq.svd} as the singular value decomposition (SVD) of $A$ and $\sigma_1,\dots,\sigma_p$ are the singular values of $A$.
+\end{theorem}
+
+\begin{proof}
+    Proof can be done by induction. See~\ycite[2013, Theorem~2.4.1]{van2013mc}.
+\end{proof}
+
+From now, without explicit mention, $A$ will be a square matrix of full rank (our input $Q_\ell$ is always square, full rank matrix). Therefore, if we have the singular value decomposition $A = U\Sigma V\tp$, then $U,V\in\R\nn$ are unitary and $\Sigma = \diag(\sigma_1,\dots,\sigma_n)\in\R\nn$ where $\sigma_1\geq \dots \geq \sigma_n > 0$. 
+
+From the definition, the singular values of $A$ can be computed via computing the eigenvalues of $A\tp A = V\varLambda V\tp$, where $\varLambda = \Sigma^2$. Hence, the singular values of $A$ are the positive roots of the eigenvalues of $A\tp A$. Based on this relationship, we have the following properties.
+
+\begin{corollary}\label{col.2norm}
+    If $A\in\R\nn$ of full rank and normal, then $\sigma(A) = \abs{\lambda(A)}$.
+\end{corollary}
+
+\begin{proof}
+  If $A$ is normal, then $A\tp A = AA\tp$. By spectral theorem, if $A$ is normal, then $A = U\varLambda U\tp$ where $U$ is unitary and $\varLambda$ is a diagonal matrix with eigenvalues of $A$ on the diagonal. Therefore, the singular values of $A$ are 
+    \begin{equation}\notag
+        \sigma(A) = \sqrt{\lambda(A\tp A)} = \sqrt{\l(U\varLambda ^2U\tp)} = \sqrt{\l(\varLambda^2)} = \sqrt{\l(\varLambda)^2} = \abs{\l(A)}.
+    \end{equation}
+    Combine this Corollary and \eqref{eq:example-2.4}, we have: if $A$ is normal, then $\norm{A} = \max\{\abs{\l(A)}\}$.
+\end{proof}
+
+
+\section{Test Matices}\label{sec:test-matrices}
+Throughout this thesis, we will perform lots of MATLAB testing on our algorithms, hence we want to generate real symmetric matrices $A$ with desired condition number and different eigenvalue distributions.
+
+To accomplish such a goal, we use the MATLAB built-in function \inline{gallery}\footnote{A MATLAB built-in function to generate test matrices. For the full manual, you may refer to \url{https://www.mathworks.com/help/matlab/ref/gallery.html}.}. If we use \inline{gallery('randsvd',n, -kappa)} where \inline{kappa} is a positive integer, then it will generate a symmetric positive definite matrix $A\in\R\nn$ with $\kappa(A) = \mathtt{kappa}$. Our code \inline{my_randsvd} from Appendix~\ref{app:myrandsvd} is the modified version of \inline{gallery('randsvd')} and we deliberately change some eigenvalues to negative such that the output matrix will not necessarily be positive definite. It provides two different eigenvalue distributions.
+\begin{enumerate}
+  \item Mode \texttt{'geo'}, \inline{A = my_randsvd(n, kappa, 'geo')}: The output matrix $A\in\R\nn$ with $\kappa(A) = \mathtt{kappa}$ and the magnitude of the eigenvalues of $A$ are geometrically distributed.
+  \item Mode \texttt{'ari'}, \inline{A = my_randsvd(n, kappa, 'ari')}: The magnitude of the eigenvalues of $A$ are arithmetically distributed.
+\end{enumerate}
+
+In Chapter~\ref{chap:mixed-precision}, we will test our algorithm on matrices with different distributions. For the rest of the thesis, we will use mode \texttt{'geo'} by default.

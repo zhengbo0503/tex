@@ -1,0 +1,154 @@
+\chapter{Introduction}
+
+Modern hardware increasingly supports low precision floating-point
+arithmetic. Using low precision, we have opportunities to accelerate linear
+algebra computations. A symmetric eigenproblem is solving
+\begin{equation}\notag
+  Ax = \l x,
+\end{equation}
+with $x\neq 0$ and the matrix $A\in\R\nn$ is symmetric. Equivalently, the
+problem is aiming to compute the eigendecomposition
+\begin{equation}\notag
+  A = Q\varLambda Q\tp,\quad A = A\tp \in \R\nn,\quad Q\tp Q = QQ\tp = I,
+\end{equation}
+and $\varLambda$ is the diagonal matrix with the eigenvalues of $A$ along
+the diagonal.
+
+Traditional ways of solving such a problem include the Jacobi algorithm,
+the power method and the QR algorithm~\ycite[2000,
+Section~5--7]{2000-Golub-eigen-review}. This thesis is concerned with the
+Jacobi algorithm proposed by Jacobi in 1846 which is an iterative method
+that reduces the off-diagonal entries at each step. In addition, we
+investigate how the usage of low precision arithmetic can speed up the
+Jacobi algorithm.
+
+In 2000, Drmač and Veselić~\ycite[2000]{DRMAC2000-preconditioner} provided
+a way to speed up the Jacobi algorithm on the real symmetric matrix $A$.
+Let $U$ be the approximate eigenvector matrix of $A$, then applying the
+Jacobi algorithm on $U\tp A U$ can speed the reduction up.
+
+In Chapter~\ref{chap:norms} we provide essential definitions and examples
+including norms, orthogonal matrix and the singular value decomposition. We
+introduce two important classes of the orthogonal matrix, the Givens
+rotation and the Householder transformation.
+
+The Jacobi algorithm is introduced in Chapter~\ref{chap:jacobi_algorithm}.
+We describe the derivation of the Jacobi algorithm and its convergence
+rate. In Section~\ref{sec:classical-jacobi} and~\ref{sec:cyclic-jacobi} we
+study how to choose the pair of index required by the Jacobi algorithm.
+
+The classical Jacobi algorithm, mentioned in
+Section~\ref{sec:classical-jacobi}, chooses the largest off-diagonal entry
+as the pair of index and the cyclic-by-row Jacobi algorithm, mentioned in
+Section~\ref{sec:cyclic-jacobi}, chooses the indices row by row but
+restricts to the superdiagonal part of the matrix. Although the classical
+Jacobi algorithm reduces the off-diagonal entries most optimally, the
+cyclic-by-row Jacobi algorithm does not require expensive off-diagonal
+searches. Finally, we conduct numerical tests to examine the speed and
+conclude that we shall stick with the faster cyclic-by-row Jacobi
+algorithm.
+
+We provide a procedure to get an approximate eigenvector matrix in
+Chapter~\ref{chap:orthogonalisation}. Firstly, compute the
+eigendecomposition at low precision $A \approx Q_\ell D_\ell Q_\ell\tp$
+such that
+\begin{equation}\notag
+  \gnorm{Q_\ell\tp Q_\ell - I} \lesssim nu_\ell,\quad \gnorm{AQ_\ell -
+  Q_\ell D_\ell}\lesssim nu_\ell  \gnorm{A},
+\end{equation}
+where $u_\ell$ is the unit roundoff in low precision. Then we orthogonalize
+$Q_\ell$ to $Q_d$ such that $\gnorm{Q_d\tp Q_d - I} \lesssim nu_d$ where
+$u_d$ is the unit roundoff in double precision (``Unit roundoff'' - defined
+in Section~\ref{sec:IEEE}). We can use $Q_d$ as the approximate eigenvector
+matrix of $A$ and precondition $A$ into $A_{\text{cond}} = Q_d\tp A Q_d$,
+then the Jacobi algorithm applied on $A_{\text{cond}}$ should converge in a
+few sweeps. In Section~\ref{sec:Householder-QR}
+and~\ref{sec:polar-decomposition} we review two methods for orthogonalizing
+a matrix: the Householder QR factorization and the polar decomposition.
+Particularly, in Section~\ref{sec:polar-decomposition}, we study the Newton
+iteration approach and its variant Newton--Schulz iteration to compute the
+unitary factor of the polar decomposition. MATLAB codes are presented and
+after several numerical testings, among the Householder QR factorization
+approach, the Newton iteration approach and the Newton--Schulz iteration
+approach, the latter method is the most accurate and efficient one to use.
+
+Finally, we assemble all the ingredients and produce
+Algorithm~\ref{alg:jacobi-preconditioned} in
+Chapter~\ref{chap:mixed-precision}, a mixed precision Jacobi algorithm. In
+Section~\ref{sec:quadratic-conv}, we review some literature on the
+quadratic convergence of the cyclic-by-row Jacobi algorithm. We observe
+from the numerical testings that for any symmetric matrix $A\in\R\nn$,
+after preconditioning, the Jacobi algorithm should converge within 10
+iterations. The numerical testings suggest the Jacobi algorithm only needs
+two iterations to converge and there is a 75\% reduction of time using
+preconditioned Jacobi algorithm compare to the Jacobi algorithm on its own.
+
+
+
+\section{Notations}
+We use the Householder notations:
+\begin{itemize}
+\item Use capital letters for matrices.
+\item Use lower case letters for vectors.
+\item Use lower case Greek letters for scalars.
+\end{itemize}
+
+We use $\lambda(A)$ and $\sigma(A)$ to represent the eigenvalues and the
+singular values of $A$. We denote $\sigma_1(A)$ or $\sigma_1$ if the matrix
+$A$ has been specified as the largest singular value of $A$.
+
+We say that the $Ax = b$ problem is well conditioned if small changes in
+the data $A,b$ always make small changes in the solution $x$; otherwise, it
+is ill-conditioned. We use $\kappa(A) = \gnorm{A}\gnorm{A\inv}$ as a
+measure to visualize the condition of a problem. (Norms will be introduced
+in Section~\ref{sec:norm})
+
+We say a matrix $A\in\R\nn$ is almost orthogonal if
+$\gnorm{A\ctp A - I} \lesssim nu_\ell$ where $I$ is the $n\times n$
+identity matrix. A matrix $A\in\R\nn$ is almost diagonal if
+$\gnorm{A - \diag(A)}/\gnorm{A} \lesssim nu_\ell$ and this quantity is zero
+if $A$ is diagonal.
+
+
+\section{IEEE standard}\label{sec:IEEE}
+The unit roundoff measures the relative error due to approximation in
+floating-point arithmetic. Throughout this thesis, we will only consider
+two precisions: single precision and double precision~\ycite[2002,
+Section~2.1]{high:ASNA2}. We will denote $u_\ell$ as the unit roundoff at
+single precision and $u_d$ as the unit roundoff at double precision. IEEE
+standard 754-2019~\ycite[2019, Table~3.5]{IEEE2019} shown in
+Table~\ref{tab.unit-roundoff} will be used. For simplicity, any matrix with
+subscript $\ell$ will be at single precision and any matrix with subscript
+$d$ will be at double precision.
+\begin{table}[ht]
+\centering
+\caption{Unit roundoff defined by IEEE standard 754-2019.}
+\label{tab.unit-roundoff}
+\begin{tabular}{ll}
+  \toprule
+  Type & Unit Roundoff \\ \midrule 
+  Single precision & $2^{-24} \approx $ 5.96e-8 \\
+  Double precision & $2^{-53} \approx$ 1.11e-16 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Reproducible Research}
+
+In this section, we will present our testing environment and system
+specifications. With these informations, the reader will have the ability
+to reproduce any results we have in this thesis.
+
+Testing environment and system specifications:
+\begin{itemize}
+\item System OS: Windows 10.
+\item MATLAB version: 9.12.0.2009381 (R2022a) Update 4~\cite{MATLAB:2022}.
+\item CPU: Intel(R) Core(TM) i5-9600KF CPU @ 3.70GHz.
+\item GPU: NVIDIA GeForce RTX 2060.
+\item All the testings that require the random number generator will
+initiate after the MATLAB command \inline{rng(1,'twister')}\footnote{MATLAB
+  built-in function to control the random number generator, see
+  \url{https://www.mathworks.com/help/matlab/ref/rng.html}.}.
+\end{itemize}
+
