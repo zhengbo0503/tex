@@ -1,0 +1,48 @@
+\documentclass{article}
+\def\ntitle {Accuracy of the Matrix Square Root}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+% \def\needcrop{ } % crop for easy previewing
+% \def\fancysec{ } % section font become fancier 
+\input{/Users/clement/Dropbox/bibtex/clem.tex}
+
+%% redefine \emph and \bf such that they are colored and can be easily
+%% transformed back to normal \emph and \bf
+\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+
+
+% \includeonly{background}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\thispagestyle{firstpage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{introduction}
+\include{background}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
+\bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
+  /Users/clement/Dropbox/bibtex/ref.bib}
+%% APPENDICES
+\appendix
+\include{appendices}
+
+
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

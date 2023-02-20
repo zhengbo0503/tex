@@ -1,0 +1,174 @@
+\message{ !name(eigen-system.tex)}\documentclass{article}
+
+\def\ntitle {Computing Eigensystem}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+\input{clem.tex}
+
+\begin{document}
+
+\message{ !name(eigen-system.tex) !offset(-3) }
+
+\maketitle
+% \tableofcontents
+\thispagestyle{firstpage} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Divide and Conquer}
+\label{sec:divide-conquer}
+\subsection{Introduction}
+This is currently the fastest method to find all the eigenvalues and
+eigenvectors of symmetric tridiagonal matrices larger than $n = 25$.
+In the worst cases, divide-and-conquer requires $O(n^3)$ flops, but in
+practice, the constant is quite small. 
+Over a large of set of random test cases, it appears to take only
+$O(n^{2.3})$ flops on average, and as low as $O(n^2)$ for some eigenvalue
+distribution.
+
+In theory, divide-and-conquer could be implemented to run on $O(n\log^pn)$
+flops, where $p$ is a small integer. This super-fast implementation uses
+the fast multi-pole method (FMM), originally invented for the completely
+different problem of computing the mutual forces on $n$ electrically
+charged particles.
+But the complexity of this super-fast implementation means that QR
+iteration is currently the algorithm of choice for finding all eigenvalues,
+and divide-and-conquer without the FMM is the method of choice for finding
+all eigenvalues and all eigenvectors.
+
+\subsection{Overview}
+It is quite subtle to implement in a numerically stable way. Indeed,
+although this method was first introduced in 1981, the ``right''
+implementation was not discovered until 1992.  This routine is available as
+LAPACK routines \texttt{ssyevd} for dense matrices and \texttt{sstevd} for
+tridiagonal matrices.  This routine uses divide-and-conquer for matrices of
+dimension larger than 25 and automatically switches to QR iteration for
+smaller matrices.
+
+\begin{equation}
+  \begin{aligned}
+    T & =
+        \left[
+        \begin{array}{cccc|cccc}
+          a_1 & b_1 & & & & & & \\
+          b_1 & \ddots & \ddots & & & & & \\
+              & \ddots & a_{m-1} & b_{m-1} & & & & \\
+              & & b_{m-1} & a_m & b_m & & & \\
+          \hline & & & b_m & a_{m+1} & b_{m+1} & & \\
+              & & & & b_{m+1} & \ddots & & \\
+              & & & & & & \ddots & b_{n-1} \\
+              & & & & & & b_{n-1} & a_n
+        \end{array}\right]\\
+      & =\left[
+        \begin{array}{cccc|cccc}
+          a_1 & b_1 & & & & & & \\
+          b_1 & \ddots & \ddots & & & & \\
+              & \ddots & a_{m-1} & b_{m-1} & & & & \\
+              & & b_{m-1} & a_m-b_m & & & \\
+          \hline & & & & a_{m+1}-b_m & b_{m+1} & & \\
+              & & & & b_{m+1} & \ddots & & \\
+              & & & & & \ddots & b_{n-1} \\
+              & & & & & b_{n-1} & a_n
+        \end{array}\right]
+        + \left[
+        \begin{array}{cc|cc}
+          & 	&  &  \\
+          & b_m & b_m &  \\\hline
+          & b_m & b_m &  \\
+          &  & &
+        \end{array}\right] \\
+      & = \left[\begin{array}{c|c}
+                  T_1 & 0 \\
+                  \hline 0 & T_2
+                \end{array}\right]+b_m \cdot\left[\begin{array}{c}
+                                                    0 \\
+                                                    \vdots \\
+                                                    0 \\
+                                                    1 \\
+                                                    1 \\
+                                                    0 \\
+                                                    \vdots \\
+                                                    0
+                                                  \end{array}\right][0, \ldots, 0,1,1,0, \ldots, 0] \equiv\left[\begin{array}{c|c}
+                                                                                                                  T_1 & 0 \\
+                                                                                                                  \hline 0 & T_2
+                                                                                                                \end{array}\right]+b_m v v^T .
+  \end{aligned}
+\end{equation}
+Suppose that we have the eigendecomposition of $T_1$ and $T_2$:
+$T_i = Q_i\Lambda_iQ_i\tp$. These will be computed recursively by this same
+algorithm. We related the eigenvalues of $T$ to those of $T_1$ and $T_2$ as
+follows:
+\begin{equation}
+  \notag
+  \begin{aligned}
+    T & =
+        \begin{bmatrix}
+          T_1 & 0 \\ 0 & T_2
+        \end{bmatrix}
+        + b_mvv\tp \\
+      & =
+        \begin{bmatrix}
+          Q_1\Lambda_1Q_1\tp & 0 \\ 0 & Q_2\Lambda_2Q_2\tp
+        \end{bmatrix}
+        + b_mvv\tp\\
+      & =
+        \begin{bmatrix}
+          Q_1 & 0 \\ 0 & Q_2
+        \end{bmatrix}
+        \left(
+        \begin{bmatrix}
+          \Lambda_1 & \\ & \Lambda_2
+        \end{bmatrix} + b_muu\tp
+        \right)
+        \begin{bmatrix}
+          Q_1\tp & 0 \\ 0 & Q_2\tp
+        \end{bmatrix}
+  \end{aligned}
+\end{equation}
+where
+\begin{equation*}
+  u =
+  \begin{bmatrix}
+    Q_1\tp & 0 \\ 0 & Q_2
+  \end{bmatrix}, \qquad
+  v =
+  \begin{bmatrix}
+    \text{last column of $Q_1\tp$} \\ \text{first column of $Q_2\tp$}
+  \end{bmatrix}
+\end{equation*}
+since $v = [0,\dots,0,1,1,0,\dots,0]\tp$. Therefore, the eigenvalues of $T$
+are the same as those of the similar matrix $D + \rho uu\tp$ where $D =
+\begin{bmatrix}
+  \Lambda_1 & 0 \\ 0 & \Lambda_2
+\end{bmatrix}
+$ is diagonal, $\rho = b_m$ is a scalar, and $u$ is a vector. Henceforth,
+we will assume without loss of generality that the diagonal
+$d_1,\cdots,d_n$ of $D$ is sorted: $d_n\leq\cdots\leq d_n$.
+
+To find the eigenvalues of $D + \rho uu\tp$, assume first that
+$D - \lambda I$ is nonsingular, and compute the characteristic polynomial
+as follows:
+\begin{equation}
+  \label{eq:3}
+  \det(D + \rho uu^T - \lambda I) 
+  = \det((D - \lambda I)(I + \rho(D - \lambda I )^{-1}uu^T)).
+\end{equation}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\bibliographystyle{nj-plain}
+\bibliography{~/bibtex/references.bib}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
+
+\message{ !name(eigen-system.tex) !offset(-174) }

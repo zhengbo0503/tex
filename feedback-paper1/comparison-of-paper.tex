@@ -1,0 +1,151 @@
+\documentclass{article}
+
+\def\ntitle {Notes on papers }
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+\input{clem.tex}
+
+\newcommand{\code}[1]{\texttt{\color{green!30!black} #1}}
+\newcommand{\Egap}[1]{\min_{\lambda_i({#1}) \neq \lambda_j({#1})} \abs{\lambda_i({#1}) - \lambda_j({#1})}}
+
+\begin{document}
+\maketitle
+% \tableofcontents
+\thispagestyle{firstpage} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Paper~{\ycite[2022]{2022ZhangBai_mixedprecisionJacobi}}}
+The authors try to implement a Jacobi algorithm which utilizes the
+benefit of fastness of low precision. It first computes the
+approximate eigendecomposition in low precision, then orthogonalize
+it using MGS approach and apply to original matrix as a
+preconditioner, and finally compute the eigensystem of
+preconditioned matrix. 
+
+The paper also provides the bound on distance
+of low precision matrix of eigenvector and its orthogonal QR factor, a
+bound 
+on $\mathrm{off}(\text{Preconditioned Matrix})$, and a sufficient
+condition for the Jacobi algorithm to have quadratic convergence
+that based on both $\operatorname{Egap}(A)$ and
+$\operatorname{Egap}(Q\tp AQ)$, where 
+\begin{equation}\notag
+    \operatorname{Egap}(A) = \Egap{A}
+\end{equation}
+% 2. What were the key elements of the approach
+The key element is the preconditioning method. Notice that the
+quadratic convergence is readily presented by~\cite{1966Kempen_quadraticconvergencespecial}, and
+by preconditioning, the preconditioned matrix is automatically
+satisfies the condition presented in
+\cite{1966Kempen_quadraticconvergencespecial}.
+
+One improvement could be construct a simpler proof of the theorems,
+especially for the bound of $\norm{Z-Q}$ where $Z$ is constructed by low
+precision eigensolver and $Q$ is its orthogonal QR factor.
+
+\subsection{Questions}
+
+\noindent$\star$ I am confused about the following inequality arises
+from \ycite[2022,p.~9, Eq.~4.9]{2022ZhangBai_mixedprecisionJacobi}:
+\begin{equation}\notag
+    \abs{r_{ij}} \leq \norm{R\inv - R\tp}. \qquad \text{\small\sffamily\color{purple} How is this inequality arises?}
+\end{equation}
+
+\noindent$\star$ Moreover, do we have the following inequality: suppose
+$\prod_{i=1}^n A_i$ is well-defined, then for any $j\in\{1,\dots,n\}$,
+\begin{equation}\notag
+    \left\|{\prod_{i=1}^n A_i}\right\|_F 
+    \leq \fnorm{A_j}\prod_{i=1, i\neq j}^n \tnorm{A_i}.
+\end{equation}
+In fact this inequality should be true as long as the right-hand side
+have one Frobenius norm component (by $\tnorm{A}\leq\fnorm{A}$).
+
+\noindent\emph{My workaround.} Based on $\fnorm{AB}\leq
+\tnorm{A}\fnorm{B}$, we can generalized this to the above equation,
+therefore, I just want to make sure this is indeed correct.
+
+\section{Paper~\cite{2022GaoMaShao_mixedprecisionJacobi}}
+
+% 1. What did the authors try to accomplish?
+The authors trying to accomplish improving the one-sided Jacobi SVD
+algorithm from the LAPACK.\footnote{The computation routine
+\code{xGEJSV}, which has been available since Version~3.2, implements the preconditioned Jacobi SVD algorithm
+introduced by Drma\v{c} and Veseli\`{c} in
+\ycite[2008]{2008DrmacVeselic_NewFastAccuratea,
+2008DrmacVeselic_NewFastAccurateb}. The algorithm used by these authors
+utilizes careful QR factorizations as preconditioning method.} The
+authors claim that they can achieve $2\times$ speedup. To do so, they do
+the following three steps:
+\begin{itemize}[nosep]
+    \item Preconditioning, mainly using QR factorization. 
+    Given $A\in\C\nn$, first obtain $AP = Q_1R_1$ which is a
+    rank-revealing QR factorization. Then if $R_1$ is diagonal dominant,
+    then we are good to go. Otherwise, a LQ decomposition will be
+    performed on $R_1$, $R_1 = L_1 Q_2$. Set $X = L_1$, we have $Q_1\ctp
+    APQ_2\ctp = X$. 
+    \item Compute the SVD in low precision. Before doing so, the authors
+    check whether the low precision SVD is necessary by using the
+    condition number of $R_1$, i.e. If $\kappa(R_1)$ is smaller than
+    some tolerance, (usually $u_{\text{high}}^{1/4}$) then we can skip
+    the low precision SVD preconditioning.  
+    \item Transform the solution back to the working precision using QR
+    factorization and apply the usual one-sided Jacobi to iteratively
+    refine the solution. 
+\end{itemize}
+
+Moreover, they pick out some special cases that the mixed precision
+Jacobi may even slower. These cases are mainly related to apply
+unnecessary preconditioning methods. 
+
+They also gives a backward analysis on their algorithm. Since the
+algorithm is based on the one in
+\cite{2008DrmacVeselic_NewFastAccuratea}, therefore the stability is
+ensured automatically. 
+
+% 2. What were the key elements of the approach
+The key elements of this approach are the following:
+\begin{itemize}[nosep]
+    \item Carefully implement low precision SVD as preconditioner. 
+    \item Carefully QR preconditioning as discussed in the first bullet
+    point above. 
+    \item The Jacobi SVD algorithm can take the advantage of almost
+    orthogonal columns which leads to locally quadratic convergence.
+\end{itemize}
+
+
+\section{Conclusion}
+These two papers are all following similar idea compare to my MSc
+Project \cite{2022Zhou_mixedprecisioneigensolver}. We all use the low
+precision eigen-(singular value decomposition) solver to obtain a
+preconditioner. The analysis of sufficient condition for quadratic
+convergence is well developed and the numerical experiments in
+\cite{2022GaoMaShao_mixedprecisionJacobi,2022ZhangBai_mixedprecisionJacobi,2022Zhou_mixedprecisioneigensolver}
+are all shown that the mixed precision algorithm is much more better
+than the original fixed precision one. However, I think I need to trace
+back to the
+paper~\cite{2008DrmacVeselic_NewFastAccuratea,2008DrmacVeselic_NewFastAccurateb,
+2017Drmac_Algorithm977QR, 1992DemmelVeselic_Jacobismethodis} in order to
+fully understand this precondition method so that I am able to utilizes
+such method in future projects. 
+
+\emph{Some further work.} Purpose a new way of orthogonalizing the low
+precision orthogonal matrix to high (double) precision. Instead of QR,
+in \cite{2022Zhou_mixedprecisioneigensolver}, we implement a polar
+decomposition based orthogonalization process, and this method could be
+better since computing the polar decomposition using the Newton-Schulz
+iteration fully utilizes the near orthogonal property of the low
+precision orthogonal matrix. Moreover, we need to prove that the result
+we get using the polar decomposition method is not worse than the QR
+decomposition method both in computational complexity and the error.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage 
+\bibliographystyle{nj-plain}
+\bibliography{/Users/clement/bibtex/references.bib}
+
+
+\end{document}

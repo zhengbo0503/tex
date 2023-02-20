@@ -1,0 +1,389 @@
+\documentclass{article}
+\def\ntitle {Update 1}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+% \def\needcrop{ } % crop for easy previewing
+% \def\fancysec{ } % section font become fancier 
+\input{/Users/clement/Dropbox/bibtex/clem.tex}
+
+%% redefine \emph and \bf such that they are colored and can be easily
+%% transformed back to normal \emph and \bf
+\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+
+\def\sign{\mathrm{sign}}
+
+\begin{document}
+\maketitle
+% \tableofcontents
+\thispagestyle{firstpage} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Postive Definiteness, SVD and Eigendecomposition}
+\label{sec:norm-post-defin}
+
+Suppose $A \in\C\nn$, and $\Lambda$ is the diagonal matrix with eigenvalues
+of $A$ lies on its diagonal in arbitrary order. Denote $\Lambda(A)$ as all
+the eigenvalues of $A$, and $\Sigma(A)$ as all the singular values of $A$.
+We use SVD to denote ``Singular Value Decomposition''.
+
+\begin{enumerate}
+\item\label{item:1} We know that if $A$ is normal, then it can be unitarily
+diagaonlizable, i.e. $A = Q\Lambda Q\ctp$, where $Q$ is a unitary matrix.
+\item If $A$ is Hermitian, then its eigenvalues are all real and
+$\Sigma(A) = \abs{\Lambda(A)}$. If the SVD of $A$ is $U\Sigma V\ctp$, then
+$\abs{U} = \abs{V}$. They are not agreed when the eigenvalues and
+``corresponding'' singular values are not agreed.
+\item $A$ is Hermitian, then its eigenvalues are all real. (one can easily
+prove this by using~\ref{item:1}).
+\item \label{item:4} If $A$ is normal, and $\Lambda(A) \subset \R$, then
+$A\ctp = A$.
+\begin{proof}
+Since $A$ is normal, then by~\ref{item:1}, $A$ is unitarily diagonalizable,
+$A = Q\Lambda Q\ctp$. Then $A\ctp = Q\Lambda\ctp Q\ctp = Q\Lambda Q\ctp$.
+The final equality uses $\Lambda(A) \subset \R$, i.e.
+$\wb{\Lambda(A)} = \Lambda(A)$.
+\end{proof}
+\item The previous two points can be concluded as: \emph{If $A$ is normal,
+  then $A$ is Hermitian if and only if its eigenvalues are all real.}
+\item Using \ref{item:4}, we conclude that a normal matrix that is not
+Hermitian must have complex eigenvalues. E.g.
+\begin{equation}\notag
+  A = 
+  \begin{bmatrix}
+    1 & 1 + \im & 1 \\
+    -1 + \im & 1 & 1 \\
+    -1 & -1  & 1
+  \end{bmatrix}
+\end{equation}
+This matrix is normal, but not Hermitian, and
+$\Lambda(A) = \{1+ 2.21\im, 1 - 1.68\im, 1 - 0.54\im\}$. Then I wondering,
+why these complex eigenvalues does not comes in conjugate pairs.
+\item Complex eigenvalues of matrices with \emph{real} entries come as
+conjugate pairs.
+\end{enumerate}
+
+\begin{lemma}[SVD and Eigendecomposition] \label{lem:svd-eig} Suppose
+$A\in\R\nn$ has a SVD $U\Sigma V\ctp$. Then, we have the following
+\begin{align*}
+  & AA\ctp = U\Sigma V\ctp V \Sigma\ctp U\ctp = U(\Sigma^2)U\ctp,\\
+  & A\ctp A = V\Sigma\ctp U\ctp U\Sigma V\ctp = V(\Sigma^2)V\ctp.
+\end{align*}
+\begin{enumerate}
+\item Hence the singular values $\sigma_1,\dots,\sigma_n$ are the positive
+square roots of the eigenvalues of $AA\ctp$ or $A\ctp A$. Moreover, since
+$AA\ctp$ and $A\ctp A$ are positive semi-definite, hence the square roots
+are real and non-negative.
+\item The left singular vectors, columns of $U$ are the eigenvectors of
+$AA\ctp$.
+\item The right singular vectors, columns of $V$ are the eigenvectors of
+$A\ctp A$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proposition} [{\cite[Theorem~5.5]{trba97_nla}}]
+\label{prop:sv=|ev|}
+If $A = A\ctp\in \C\nn$, then the singular values of $A$ are the absolute
+values of the eigenvalues of $A$.
+\end{proposition}
+
+\begin{proof}
+This proof is done by construction of SVD. $A$ is Hermitian, hence we have
+$A = Q\Lambda Q\ctp$, where $\Lambda\in\R\nn$, and $Q$ is unitary. We can
+write the eigendecomposition as
+
+\begin{equation}
+  \label{eq:2}
+  A = Q\Lambda Q\ctp = Q |\Lambda| \sign(\Lambda) Q\ctp 
+  =: Q|\Lambda| P\ctp, 
+\end{equation}
+
+where $\abs{\Lambda}$ and $\sign(\Lambda)$ denote the diagonal matrices
+whose entries are $\abs{\lambda_i}$ and $\sign(\lambda_i)$, respectively.
+Notice that $P$ is unitary by noticing $\sign(\Lambda)$ is unitary.
+Therefore, \eqref{eq:2} is a SVD of $A$, with singular values equal to
+$\abs{\lambda_i}$. One can easily order the diagonal entries of $|\Lambda|$
+by applying suitable permutation matrices to $Q$ and $\sign(\Lambda)Q\ctp$.
+\end{proof}
+
+\begin{corollary}
+\label{prop:SVD-u=v}
+If $A = A\ctp\in \C\nn$, and it has a singular value decomposition
+$A = U\Sigma V\ctp$. Then $\abs{U} = \abs{V}$.
+\end{corollary}
+
+\begin{proof}
+({\cite[Section~3.1]{dmm03}}) Let $A\in\R\nn$ be a symmetric matrix with
+SVD $A = U\Sigma V\tp$. Then $V\tp A V = V\tp U \Sigma$, and $V\tp U\Sigma$
+is orthogonally similar to $A$, with $V\tp U$ is orthogonal.
+
+If $A$ has distinct singular values
+$\sigma_1 > \sigma_2 > \dots > \sigma_p$ with respective multiplicities
+$m_i$, $i=1,\dots,p$. ($\sum_i^pm_i=n$). Partitioning $U$ and $V$ into
+\begin{equation}\notag
+  U = [  U_1 \mid \dots \mid   U_p], \qquad
+  V = [  V_1 \mid \dots \mid   V_p]
+\end{equation}
+where $  U_i,   V_i \in \R^{n\times m_i}$ corresponding to each
+distinct singular value. Since, due to the symmetry of $A$ and
+Lemma~\ref{lem:svd-eig}, both its left and right singular vectors (columns
+of $U$ and $V$) are eigenvectors of $A^2$. Consequently,
+\begin{equation}\notag
+  V\tp U = \diag(  V_1\tp   U_1,\dots,   V_p\tp   U_p)
+\end{equation}
+is block diagonal, where each diagonal block
+$  V_i\tp U_i\in \R^{m_{i}\times m_{i}}$ is itself \emph{orthogonal}.
+Furthermore, since
+\begin{equation}\notag
+  V\tp A V = V\tp U \Sigma = \diag(\sigma_1   V_1\tp  
+  U_1,\dots,\sigma_p   V_p\tp   U_p)
+\end{equation}
+is symmetric, we conclude that each $  V_i\tp   U_i$ is not only
+orthogonal but also symmetric, therefore, its eigenvalues are $\pm 1$. The
+$\pm 1$ are precisely the signs of those eigenvalues of $A$ having modulus
+$\sigma_{i}$.
+
+\begin{example}
+Suppose $A$ has an eigendecomposition
+\begin{equation}\notag
+  A = \wt V
+  \begin{bmatrix}
+    4 & & & \\ & -3 & & \\ & & 3 & \\ & & & 5
+  \end{bmatrix} \wt V\tp,
+\end{equation}
+then the SVD of $A$ have the form
+\begin{equation}\notag
+  A = U
+  \begin{bmatrix}
+    5 & & & \\ & 4 & & \\ & & 3 & \\ & & & 3
+  \end{bmatrix}.
+\end{equation}
+Since $V\tp U \Sigma$ is orthogonally similar to $A$, therefore,
+\begin{equation}\notag
+  V\tp U =
+  \begin{bmatrix}
+    1 & & & \\ & 1 & & \\ & & -1 & \\ & & & 1
+  \end{bmatrix}
+\end{equation}
+\textbf{(END OF EXAMPLE)}
+\end{example}
+
+In the simplest case when $m_{i} = 1$, then eigenvalues are just $v_{i}\tp
+u_{i}\sigma$. In the general case, a simple calculation shows that if the
+spectrum (eigenvalues) of $  V_{i}\tp   U_{i}$ contains $m_{i}^{+}$
+eigenvalues equal to 1 and $m_{i}^{-}$ equal to $-1$, ($m_{i} = m_{i}^{+} +
+m_{i}^{-}$), then
+\begin{equation}\label{eig-trace}
+  m_{i}^{\pm} = \frac{m_{i} \pm \tr(  V_{i}\tp   U_{i})}{2},
+\end{equation}
+i.e. the multiplicity of the eigenvalues $\pm \sigma_{i}$ can be easily
+recovered from the trace of $  V_{i}\tp   U_{i}$.
+
+Now, in order to obtain eigenvectors of $A$, we split into the following
+three cases:
+\begin{enumerate}
+\item
+If $m_{i} = 1$, then right singular vectors $v_{i}$ itself is an
+eigenvector.
+\item
+If $m_{i} > 1$, but $\tr(  V_{i}\tp   U_{i}) = m_{i}$ (the eigenvalues
+of $V_{i}\tp U_{i}\tp$ are all positive 1 by \eqref{eig-trace}), then all
+the $m_{i}$ eigenvalues are all equal  to $\sigma_{i}$, and the
+eigenvectors are the columns of $  V_{i}$. Analog applies to $\tr( 
+V_{i}\tp   U_{i}) = -m_{i}$. 
+\item
+Generally, if $m_{i}>1$ and $m_{i} \neq m_{i}^{\pm}$, consider for each $i
+= 1,\dots,p$, we have an orthogonalization $V_{i}\tp U_{i} =
+W_{i}J_{i}W_{i}\tp$, with $J_{i} = \diag(I_{m_{i}^{+}},-I_{m_{i}^{-}})$ and
+$W_{i} = [W_{i}^{+}\mid W_{i}^{-}]\in \R^{m_{i}\times m_{i}}$ partitioned
+accordingly. Then, denoting $W = [W_{1},\dots,W_{p}]$, we have
+\begin{equation}\notag
+  V\tp U \Sigma =
+  \begin{bmatrix}
+    \Sigma_{1}^{+} & & & &  \\
+                   & \Sigma_{1}^{-} & & & \\
+                   & & \ddots & & \\
+                   & & & \Sigma_{p}^{+} & \\
+                   & & & & \Sigma_{p}^{-}
+  \end{bmatrix} =: \wt \Sigma.
+\end{equation}
+Therefore, we successfully recover the eigenvalues from the singular values
+by using the left and right singular vectors.
+Then by the relation $V\tp A V = V\tp U \Sigma$, we have
+\begin{equation}\notag
+  A = V\wt\Sigma V\tp.
+\end{equation}
+\end{enumerate}
+\end{proof}
+
+For this interesting mathematical analysis, we need to do a numerical test.
+\begin{lstlisting}[numbers=none]
+>> rng = 1; A = randn(10); A = A + A'; % generate symmetric matrix
+>> [U,S,V] = svd(A); D = V'*U*S;
+>> disp(norm(A*V - V*D)/norm(A));
+    1.1880e-15
+\end{lstlisting}
+The numerical experiment shows that  $V\tp U \Sigma$ indeed
+``apporoximate'' the eigenvalues.  
+
+
+
+% \begin{proof}[Proof. Not Correct?]
+% From Proposition~\ref{prop:sv=|ev|}, $A$ has a singular value
+% decomposition $A = Q |\Lambda| \sign(\Lambda) Q\ctp$. Then
+% \begin{equation}\notag
+% |U| = |Q| = |Q\sign(\Lambda)\ctp| = |V|.\qedhere
+% \end{equation}
+% \end{proof}
+
+\begin{corollary} \label{cor:svd=evd} Let $A\in\C\nn$ be Hermitian positive
+definite, then its eigendecomposition coincide with its singular value
+decomposition.
+\end{corollary}
+
+\begin{proof}
+By noting if $A$ is Hermitian positive definite, and its eigendecomposition
+is $Q\Lambda Q\ctp$, then $\sign(\Lambda) = I$.
+\end{proof}
+
+Notice that, previous construction does not care about the order of the
+diagonal entries of $\Lambda$, since we can always permute $Q$ and
+$\Lambda$ to make $\Lambda$ sorted. This can be done using MATLAB.
+
+\begin{lstlisting}
+% https://uk.mathworks.com/help/matlab/ref/eig.html
+function [Vs,Ds] = myeig(A)
+[V,D] = eig(A);
+[~,ind] = sort(diag(abs(D)),'descend');
+Ds = D(ind,ind);
+Vs = V(:,ind);
+end 
+\end{lstlisting}
+On the 4th line of the code, I use \inline{abs(D)} in order to sort the
+eigenvalues with respect to their absolute values, which is the singular
+values. We can then check the function via
+\begin{lstlisting}[numbers=none]
+>> rng(1); A = randn(5); A = A + A'; % symmetric matrix
+>> [V,D] = myeig(A); 
+>> disp(diag(D)); disp('---'); disp(norm(A*V-V*D));
+  -6.7126e+00
+   4.9099e+00
+  -4.3623e+00
+  -1.1499e+00
+   5.0084e-01
+---
+   2.4697e-15
+\end{lstlisting}
+The function \inline{myeig} successfully create a sorted eigendecomposition
+in the sense that the eigenvalues are sorted in the descending order in
+modulus. Moreover, to support Proposition~\ref{prop:sv=|ev|}, we check by
+\begin{lstlisting}[numbers=none]
+>> svd(A) - abs(diag(D))
+ans =
+   8.8818e-16
+   8.8818e-16
+   3.5527e-15
+   6.6613e-16
+  -8.8818e-16
+\end{lstlisting}
+These numbers are around unit roundoff and considered as zeros.
+
+\textbf{Conclusion.} To compute the matrix principal square roots for
+Hermitian positive definite matrix, we aim to compute it via
+eigendecomposition, since $A^{1/2} = Q\Lambda^{1/2}Q\ctp$. By
+Corollary~\ref{cor:svd=evd}, we can simply compute the singular value
+decomposition via DV-SVD algorithm\footnote{This algorithm refer to the SVD
+  algorithm proposed by Drma{\v{c}} and Veseli{\'{c}}
+  in~\cite{drve08i,drve08ii}}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Path to Matrix Square Root of SPD Matrix}
+Normally, we can compute the principal square root of any positive definite
+matrix via the following algorithm proposed by Higham in~\ycite[2008,
+Algorithm~6.21]{high08_fm}.
+
+\begin{algorithm}[h]
+\caption{Given a Hermitian positive deﬁnite matrix $A\in \C\nn$ this
+  algorithm computes $H = A^{1/2}$.}
+\label{alg:sqrt-higham}
+\begin{algorithmic}[1]
+\State{Compute the Cholesky factorization $A = RR\tp$.}
+\State{Compute the Hermitian polar factor $H$ of $R$ by applying any method
+  (exploiting the triangularity of $R$).} 
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h]
+\caption{Given a Hermitian positive deﬁnite matrix $A\in \C\nn$ this
+  algorithm computes $H = A^{1/2}$.}
+\label{alg:sqrt-eigdecomp}
+\begin{algorithmic}[1]
+\State{Compute the eigendecomposition $A = Q\Lambda Q\ctp$.}
+\State{Compute the matrix square root $A^{1/2} = Q\Lambda^{1/2}Q\ctp$.}
+\end{algorithmic}
+\end{algorithm}
+
+These two algorithms both compute the eigendecomposition of a positive
+definite matrix and, by previous section, we can compute the SVD instead of
+the eigendecomposition such that the accuracy of the one-sided Jacobi can
+be explored.
+
+\begin{enumerate}
+\item For Algorithm~\ref{alg:sqrt-higham}, we can compute the Hermitian
+polar factor of $R$ using
+\begin{enumerate}
+\item Scaled Newton Method, \ycite[2008, Algorithm~8.20]{high08_fm}. This
+can make use of the existing code by Higham~\cite{high-mft}.
+\item Newton--Schulz iteration.
+\item The DV-SVD algorithm.
+\end{enumerate}
+\item For Algorithm~\ref{alg:sqrt-eigdecomp}, the analysis of the DV-SVD
+algorithm is also required. This involves several papers by Drma{\v{c}}.
+\end{enumerate}
+
+The aim of this stage is to compare different method for computing the
+matrix square root of a Hermitian positive definite matrix. This can also
+extend to -- How to use mixed-precision one-sided Jacobi
+algorithm~\cite{gms22} to speed up the process without loss of accuracy.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Summary of Reading}
+\label{sec:summary-reading}
+
+\begin{enumerate}
+\item \cite{high97}\footnote{Detail notes can be found here
+  \href{https://github.com/zhengbo0503/reading_notes/blob/main/high97/do.pdf}{url}}: 
+  Newton's method has been used for computing the matrix  
+  square root. However, this method is unstable. The paper rederive the
+  stable DB iteration and derive the coupled Newton--Schulz iteration for
+  matrix square root. Scaling method is briefly discussed in context of the
+  new derivation. A new way for computing the square root of the positive
+  definite matrix is given. 
+\end{enumerate}
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
+\bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
+  /Users/clement/Dropbox/bibtex/ref.bib} 
+%% APPENDICES
+
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

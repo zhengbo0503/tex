@@ -1,0 +1,289 @@
+\RequirePackage{etex}
+\makeatletter
+\ifx \nauthor\undefined
+  \def\nauthor{Zhengbo Zhou}
+\else 
+\fi 
+\ifx \ndate\undefined 
+  \def\ndate{\today}
+\else 
+\fi 
+
+\author{\nauthor \thanks{%
+Department of Mathematics,
+University of Manchester,
+Manchester, M13 9PL, England
+(\texttt{zhengbo.zhou@postgrad.manchester.ac.uk}).
+}}
+\date{\ndate}
+\title{\ntitle}
+
+% RedeclareMathOperator
+\newcommand\RedeclareMathOperator{%
+  \@ifstar{\def\rmo@s{m}\rmo@redeclare}{\def\rmo@s{o}\rmo@redeclare}%
+}
+% this is taken from \renew@command
+\newcommand\rmo@redeclare[2]{%
+  \begingroup \escapechar\m@ne\xdef\@gtempa{{\string#1}}\endgroup
+  \expandafter\@ifundefined\@gtempa
+     {\@latex@error{\noexpand#1undefined}\@ehc}%
+     \relax
+  \expandafter\rmo@declmathop\rmo@s{#1}{#2}}
+% This is just \@declmathop without \@ifdefinable
+\newcommand\rmo@declmathop[3]{%
+  \DeclareRobustCommand{#2}{\qopname\newmcodes@#1{#3}}%
+}
+\@onlypreamble\RedeclareMathOperator
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{comment}
+\usepackage{bookmark}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tcolorbox}
+\usepackage{bm}
+\usepackage{cancel}
+\usepackage{bbm}
+\usepackage{accsupp}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[fontsize=12pt]{fontsize}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{algorithm,algorithmicx,algpseudocode}
+
+\hbadness=99999
+
+\geometry{
+  a4paper,
+  textwidth=165truemm,
+  textheight=240truemm,
+  top=28.5truemm,
+}
+
+\let\LaTeXStandardTableOfContents\tableofcontents
+\renewcommand{\tableofcontents}{%
+\begingroup%
+\renewcommand{\bfseries}{\sc}%
+\LaTeXStandardTableOfContents%
+\endgroup%
+}%
+\setcounter{tocdepth}{3}
+\makeatletter
+\renewcommand\tableofcontents{\@starttoc{toc}}
+\makeatother
+
+\hypersetup{
+  hypertexnames=false, 
+  colorlinks=true,
+  linkcolor=blue,
+  pdfauthor={Zhengbo Zhou},
+  pdftitle={\ntitle},
+  pdfcreator={Zhengbo Zhou via MikTeX}
+}
+
+\usepackage[hyperpageref]{backref}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{
+    \ifcase #1 %
+    No citations.%
+    \or
+    (Cited on p.~#2.)
+    \else
+    (Cited on pp.~#2.)
+    \fi
+}
+
+
+
+\pagestyle{fancyplain}
+\fancyhead[R]{{\textit{\footnotesize\nouppercase Short Course : Function of Matrices}}}
+\fancyhead[L]{\footnotesize\nouppercase\leftmark}
+
+
+\newtcolorbox{mybox}[1]{colback=white!90!black,colframe=white!40!black,fonttitle=\scshape\centering,title=#1}
+
+%%% MATLAB Code From Dr. Chris Johnson 
+\usepackage{color}  
+\usepackage{xcolor}
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{mygreen}{RGB}{28,172,0}
+\definecolor{mylilas}{RGB}{170,55,241}
+\definecolor{backcolour}{rgb}{0.95,0.95,1.92}
+\lstdefinestyle{mystyle}{
+	language=matlab,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\footnotesize\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\linespread{1}\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=10pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    aboveskip=\medskipamount,
+    % frame=single,
+}
+\lstset{style=mystyle}
+\def\inline{\lstinline[basicstyle=\upshape\ttfamily]}
+
+%% Theorems 
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem*{question}{Question}
+\newtheorem*{recall}{Recall}
+\newtheorem*{assumption}{Assumption}
+\newtheorem*{note}{Note}
+\numberwithin{equation}{section}
+
+\let\stdsection\section
+\renewcommand\section{\newpage\stdsection}
+
+%%% Paired labels
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor} 
+\DeclarePairedDelimiter\abs{\lvert}{\rvert} % |a|
+\DeclarePairedDelimiter\inner{\langle}{\rangle} % <a>
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+
+%%%------------------------------------------------------------------%%%
+
+%%% vector bold
+\renewcommand{\vec}[1]{\bm{#1}}
+
+%%%------------------------------------------------------------------%%%
+
+%%% Real and Imaginary
+\RedeclareMathOperator{\Im}{\mathrm{Im}}
+\RedeclareMathOperator{\Re}{\mathrm{Re}}
+
+%%% Integrate from ... to ...       
+\newcommand{\intii}{\int_{-\infty}^{\infty}}
+
+%%% Greek Letters
+% NEVER define \l for \lambda due to Polish names in BibTeX
+\renewcommand{\L}{\Lambda}
+\newcommand{\vL}{\varLambda}
+\newcommand{\g}{\gamma}
+\newcommand{\G}{\Gamma}
+\newcommand{\vG}{\varGamma}
+\renewcommand{\o}{\omega}
+\renewcommand{\O}{\Omega}
+\newcommand{\vO}{\varOmega}
+\newcommand{\s}{\sigma}
+\renewcommand{\S}{\Sigma}
+\newcommand{\vS}{\varSigma}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\lap}{\varDelta}
+
+%%% Matrix Related
+\newcommand{\n}{^{n}}
+\newcommand{\m}{^{m}}
+\newcommand{\Rn}{\R^n}
+\newcommand{\mn}{^{m\times n}}
+\newcommand{\nn}{^{n\times n}}
+\newcommand{\tp}{^{T}} 
+\newcommand{\ctp}{^{*}}
+\newcommand{\inv}{^{-1}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\tr}{trace}
+\DeclareMathOperator{\range}{Range}
+
+%%%------------------------------------------------------------------%%%
+
+%% Norms
+\newcommand{\iter}[1]{^{(#1)}} % iteration
+\newcommand{\gnorm}[1]{\left\|{#1}\right\|} % general norm
+\newcommand{\norm}[1]{\gnorm{#1}}
+\newcommand{\tnorm}[1]{\gnorm{#1}_2} % 2-norm
+\newcommand{\inorm}[1]{\gnorm{#1}_\infty} % infinity norm
+
+%%% Over the expressions
+\newcommand{\wh}{\widehat}
+\newcommand{\wt}{\widetilde}
+\newcommand{\wb}{\overline}
+
+%%% Calculus
+\DeclareMathOperator{\grad}{\nabla}
+\renewcommand{\div}{\nabla\cdot}
+\DeclareMathOperator{\curl}{\nabla\times}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\pp}{\partial}
+\def\eu{\mathrm{e}} % euler's constant
+\def\im{\mathrm{i}} % imaginary unit
+
+%%% Citation
+\def\ycite[#1#2#3#4#5]#6{\cite[$\mit{#1#2#3#4}$#5]{#6}}
+
+%%%------------------------------------------------------------------%%%
+
+%%% MATHBB
+\newcommand{\mb}[1]{\mathbb{#1}}
+\newcommand{\N}{\mb{N}}
+\newcommand{\Z}{\mb{Z}} 
+\newcommand{\Q}{\mb{Q}}
+\newcommand{\R}{\mb{R}} 
+\newcommand{\C}{\mb{C}}
+\newcommand{\F}{\mb{F}}
+\renewcommand{\P}{\mb{P}} % Probability
+\newcommand{\E}{\mb{E}} % Expectation
+\newcommand{\V}{\mb{V}} % Variance
+
+%%% MATHCAL and MATHSCR
+\newcommand{\mc}[1]{\mathcal{#1}} % For spaces 
+\newcommand{\ms}[1]{\mathscr{#1}} % For sigma-algebra
+\newcommand{\mf}[1]{\mathfrak{#1}}
+
+%%%------------------------------------------------------------------%%%
+
+%%% Stochastic Calculus
+\newcommand{\ps}{$(\Omega,\ms F,\P)$}
+\newcommand{\ito}{It\^o}
+\DeclareMathVersion{bold}
+\newcommand{\indi}{\mathbbm{1}} % indicator function
+\providecommand*{\napprox}{%
+  \BeginAccSupp{method=hex,unicode,ActualText=2249}%
+  \not\approx
+  \EndAccSupp{}%
+}
+\mathchardef\gang="2D
+\DeclareMathOperator*{\esssup}{esssup}
+
+\DeclareMathOperator{\law}{\mathfrak{Law}}
+\newcommand{\loc}{\textup{loc}}
+\newcommand{\locmart}{\mc M_{\loc}^C}
+\newcommand{\locm}{\mc M_{\loc,T}^{C,0}}
+\newcommand{\locmt}{\wt{\mc M}_{\loc,T}^{C,0}}
+\newcommand{\nicee}[1]{\mathcal{E}_{#1}^H(B)}
+
+
+\DeclareMathOperator{\sign}{diag}
+
+\makeatother

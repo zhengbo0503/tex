@@ -1,0 +1,76 @@
+\documentclass{article}
+
+\def\ntitle {Feedback on Section~48.8}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+\input{clem.tex}
+
+\begin{document}
+\maketitle
+% \tableofcontents
+\thispagestyle{firstpage} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+    \item On page 499, equation (48.21). This should be written as 
+    \begin{equation}\notag
+        a_{ij}^2 \geq \text{average of }\{a_{rs}^2: r< s\} = 
+        {\color{red} \frac{\mathrm{off}(A)^2/2}{(n-1)n/2} = \frac{\mathrm{off}(A)^2}{(n-1)n}.}
+    \end{equation}
+    In this way, the equation (48.22) can be written as 
+    \begin{equation}\notag
+        \begin{aligned}
+            \mathrm{off}(\wt A)^2 & = \mathrm{off}(A)^2 - 2a_{ij}^2
+            \quad \text{by equation (48.20)}\\
+            & \leq \mathrm{off}(A)^2 - 2 \left(\frac{\mathrm{off}(A)^2}{(n-1)n} \right) \\
+            & = \left( 1- \frac{2}{(n-1)n}\right)\mathrm{off}(A)^2.
+        \end{aligned}
+    \end{equation}
+    \item On page 500
+    \begin{quotation}
+        \itshape 
+        A good choice is $\epsilon_k = \mathrm{off}(A_k)/\sqrt{(n-1)n/2}$.
+    \end{quotation}
+    I notice that this is coming from \ycite[1998,
+    Sec.~9.4.3]{Par1998TSEP}. From the settings in your book and
+    the definition of $\omega$ in~\cite{Par1998TSEP}, we have 
+    $$
+        2\omega = \mathrm{off}(A_k)^2,\quad N = \frac{n(n-1)}{2}.
+    $$
+    Hence we get the 
+    $$
+        \epsilon_k := \tau = \sqrt{\omega/N} = 
+        {\color{red} \sqrt{\frac{\mathrm{off}(A_k)^2/2}{{n(n-1)}/2}} = \frac{\mathrm{off}(A_k)}{\sqrt{n(n-1)}},}
+    $$
+    instead of $\epsilon_k = \mathrm{off}(A_k)/\sqrt{(n-1)n/2}$ which is
+    defined in your book.
+    \item 
+    In Algorithm 48.12, line 18, it should write $D = \diag(\diag(A))$.
+    Since you haven't defined what $\lambda_i$s are.
+    \item On page 501
+    \begin{quotation}
+        \itshape 
+        Convergence has been proved for the cyclic Jacobi method under mild assumptions. Both the classical and the cyclic method have asymptotic quadratic convergence.
+    \end{quotation}
+    As a reader, I think it's better if you could add
+    some references for this 
+    asymptotic quadratic convergence. Such as for classic Jacobi
+    method~\cite{vKem1966OtCotCJMfRSMwNDE}, and for cyclic Jacobi
+    method~\cite{1966-quadratic-convergence-vanKempen,
+    Wil1962NotQCotCJP}.
+\end{itemize}
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage 
+\bibliographystyle{nj-plain}
+\bibliography{bib.bib}
+
+
+\end{document}

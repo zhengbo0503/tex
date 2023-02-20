@@ -1,0 +1,517 @@
+\section{Background Information}
+\label{sec.backgr-inform}
+
+In this section, we will provide a brief introduction on the matrix sign
+function, the matrix square roots and the polar decomposition. Especially
+on the iterations that associated with them. For more comprehensive
+analysis and results, see~\ycite[2008, Chap.~6 and 8]{high08_fm}. 
+
+In order to analyze the matrix square roots and the polar decomposition, we
+are need the singular value decomposition.
+
+\begin{theorem}[Singular value decomposition]
+If $A\in\C\mn$, $m\geq n$, then there exists two unitary matrices
+$U\in\C^{m\times m}$ and $V \in \C\nn$ such that
+\begin{equation}\notag
+  A = U\varSigma V\ctp, \quad \varSigma =
+  \diag(\sigma_{1},\dots,\sigma_{n})\in\R^{m\times n},
+\end{equation}
+where $\sigma_{1},\dots,\sigma_{n}$ are all non-negative and arranged in
+non-ascending order. We denote the above decomposition as the singular
+value decomposition (we will abbreviate this as SVD) of $A$ and
+$\sigma_{1},\dots,\sigma_{n}$ are the singular values of $A$.
+\end{theorem}
+
+The number of nonzero singular values of $A$ is the rank of $A$. However,
+the number of eigenvalues can be less than the rank of a matrix. For
+example, consider $ A =
+\begin{bsmallmatrix}
+  0 & 2 \\ 0 & 0
+\end{bsmallmatrix}
+$, then $\Lambda(A) = \{0,0\}$ and $\Sigma(A) = \{2,0\}$, whereas
+$\rank(A) = 1$.
+
+The singular values of $A$ is uniquely determined by the eigenvalues of
+$A\ctp A$, so the diagonal factor $\varSigma$ is unique up to permutation
+of its diagonal entries.
+
+
+\subsection{Matrix Sign Function}
+Before introducing matrix square root and the polar decomposition, we need
+the matrix sign function. In this section, we will give a brief
+introduction on the matrix sign function. Several iterations for computing
+it will be presented. We will see, in Section~\ref{sec.matrix-square-roots}
+and Section~\ref{sec.polar-decomposition}, the matrix sign function plays
+an important role.
+
+\subsubsection{Definitions and Properties}
+The matrix sign function is an analogue of the scalar sign function defined
+for $z\in\C$
+\begin{equation}\notag
+  \sign(z) =
+  \begin{cases}
+    1, & \Re z > 0, \\ -1, & \Re z < 0.
+  \end{cases}
+\end{equation}
+Notice that $\sign(z)$ is undefined when $z$ lies on the imaginary axis.
+Therefore, throughout this section, $A\in\C\nn$ is assumed to have no
+eigenvalues on the imaginary axis, so that $\sign(A)$ is defined. Notice
+that, this condition restrict $A$ to be nonsingular.
+
+If $A = ZJZ\inv$ is a Jordan canonical form arranged such that
+$J = \diag(J_{1},J_{2})$, where the eigenvalues of $J_{1}\in\C^{p\times p}$
+lie in the open left half-plane and those of $J_{2} \in \C^{q\times q}$ lie
+in the open right half-plane, then
+\begin{equation}\notag
+  \sign(A) = Z
+  \begin{bmatrix}
+    -I_{p} & 0 \\ 0 & I_{q}
+  \end{bmatrix}
+  Z\inv. 
+\end{equation}
+Clearly, $A$ is commute with $\sign(A)$.
+
+% matrix sign function, explicitly expressed by high94 sec2.
+To get another expression of $\sign(A)$, consider the decomposition
+$A = SN$, where $S = \sign(A)$. Then
+$N^{2} = S\inv A S\inv A = (SS)\inv(A^{2}) = A^{2}$. We denote this
+representation as the matrix sign decomposition~\ycite[1994,
+Sec.~2]{high94},
+\begin{equation}\notag
+  A = SN, \quad S = \sign(A),\quad N = (A^{2})^{1/2}.
+\end{equation}
+Hence, we have the concise formula
+\begin{equation}\notag
+  \sign(A) = A(A^{2})^{-1/2},
+\end{equation}
+where $(\cdot)^{1/2}$ denotes the principal square root, see
+Theorem~\ref{thm.principal-sqrt}.
+% A(A*A)**(-1/2)
+
+% Thm sign(0,A;-A,0) --> ? AB and BA have the same eigenvalue. \cite{Thm.
+% 1.3.22}[hojo13\_ma].
+The next result is useful for connecting the matrix sign function with the
+matrix square root and the polar decomposition.
+
+\begin{theorem}[{\ycite[2005, Lemma~4.3]{hmm05}}] \label{thm.coupled-sign}
+Let $A,B\in\C\nn$ and suppose that $AB$ has no eigenvalues on $\R^{-}$.
+Then
+\begin{equation}\notag
+  \sign \left(
+  \begin{bmatrix}
+    0 & A \\ B & 0
+  \end{bmatrix}
+  \right) =
+  \begin{bmatrix}
+    0 & C \\ C\inv & 0 
+  \end{bmatrix},
+\end{equation}
+where $C = A(BA)^{-1/2}$.
+\end{theorem}
+
+\begin{proof}
+It is obvious that, $AB$ share the same eigenvalues as $BA$~\ycite[2013,
+Thm.~1.3.22]{hojo13_ma}. Then consider the matrix
+$P = \begin{bsmallmatrix} 0 & A \\ B & 0 \end{bsmallmatrix}$, and this
+matrix certainly will not have eigenvalues on the imaginary axis, otherwise
+$P^{2} = \begin{bsmallmatrix} AB & 0 \\ 0 & BA \end{bsmallmatrix}$ will
+have eigenvalues on $\R^{-}$. Therefore $\sign(P)$ is defined and using the
+definition $\sign(A) = A(A^{2})^{-1/2}$, we have
+\begin{align}\notag
+  \sign \left(
+  \begin{bmatrix}
+    0 & A \\ B & 0
+  \end{bmatrix}
+  \right)
+  & =
+    \begin{bmatrix}
+      0 & A \\ B & 0
+    \end{bmatrix}
+    \left(
+    \begin{bmatrix} AB & 0 \\ 0 & BA \end{bmatrix} 
+    \right)^{-1/2}\\
+      & =
+        \begin{bmatrix}
+          0 & A(BA)^{-1/2} \\ B(AB)^{-1/2} & 0
+        \end{bmatrix}
+        =:
+        \begin{bmatrix}
+          0 & C \\ D & 0
+        \end{bmatrix}
+\end{align}
+Moreover, we impose the fact that $(\sign(P))^{2} = I$, gives $D = C\inv$.
+\end{proof}
+
+\subsubsection{Newton's Method}
+The most widely used iteration for computing the sign function is the
+Newton iteration, which first mentioned by J. D. Roberts~\ycite[1980,
+Sec.~1.3]{robe80} when he was solving the matrix Lyapunov equation and the
+algebraic Riccati equation. The Newton iteration for the Sign function can
+be obtained by applying the first order approximation to the function
+$F(X) = X^{2} - I$. Let $Y$ be an approximation to the solution
+$X^{2} = I$, then define the correction term $E = S - Y$, where
+$S = \sign(A)$. Then $I = S^{2} = (Y+E)^{2} = Y^{2} + EY + YE + E^{2}$.
+Since the Newton's method is a first order approximation method, therefore,
+we drop the second order term in $E$ and give $I = Y^{2} + EY + YE$.
+Assembling these, we have the Newton iteration for the matrix sign
+function,
+\begin{equation}
+  \label{eq.sign-full-newton}
+  \left.
+  \begin{aligned}
+    E_{k}Y_{k} + Y_{k}E_{k} & = I - Y_{k}^{2} \   \\
+    Y_{k+1} & = Y_{k} + E_{k} 
+  \end{aligned}
+  \right\}
+  \quad k = 0,1,2,\dots, \quad Y_{0} \text{ is given.}
+\end{equation}
+However, this method does not have practical use, since we need to solve a
+Sylvester equation during each iteration which usually costs $O(n^{3})$
+where $n$ is the dimension of $Y_{k}$~\ycite[1979, Sec.~III]{gnv79}.
+Instead, we point out that $E_{k} = \frac{1}{2}(Y_{k}\inv - Y_{k})$ is a
+solution to the Sylvester equation
+$E_{k}^{}Y_{k}^{} + Y_{k}^{}E_{k}^{} = I - Y_{k}^{2}$. Hence we have the
+Newton iteration for the matrix sign function
+\begin{equation}\label{eq.sign-reduced-newton}
+  X_{k+1}^{} = \frac{1}{2}(X_{k}^{} + X_{k}\inv), \qquad X_{0} = A. 
+\end{equation}
+
+The next theorem~\ycite[2008,~Thm.~5.6]{high08_fm} gives the convergence of
+the above iteration
+\begin{theorem}[convergence of the Newton iteration for matrix sign
+function]
+\label{thm.conv-new-sign}
+Let $A\in\C\nn$ have no pure imaginary eigenvalues. Then the Newton
+iterates $X_{k}$ in \eqref{eq.sign-reduced-newton} converge quadratically
+to $S = \sign(A)$, with
+\begin{equation}\notag
+  \norm{X^{}_{k+1} - S_{}^{}} \leq \frac{1}{2}
+  \norm{X_{k}\inv}\norm{X_{k}^{}-S^{}_{}}^{2} 
+\end{equation}
+for any consistent norm.
+\end{theorem}
+
+\begin{proof}
+% the iterates are well defined in two sense 1. lambda remain same
+% half-plane, hence sign wouldn't change, defined and nonsingular.
+Consider an complex eigenvalue $\lambda = x + \im y$, then the iteration
+mapping will map this eigenvalue to
+\begin{equation}\notag
+  \lambda' = \lambda + \frac{1}{\lambda} =
+  x + \im y + \frac{1}{x + \im y} =
+  \left( x + \frac{x}{x^{2} + y^{2}} \right) + \im
+  \left( y - \frac{y}{x^{2} + y^{2}} \right).
+\end{equation}
+The mapped eigenvalue $\lambda'$ will remain in the same half plane as
+$\lambda$ and never become a pure imaginary eigenvalue as long as $\lambda$
+is not pure imaginary. Therefore, all $X_{k}$ are well-defined and
+nonsingular.
+
+% thm 1.13 high08\_fm
+Since both $X_{k}$ and $S$ are functions of $A$, $X_{k}$ and $S$ are
+commute by \ycite[2008, Thm.~1.13]{high08_fm}. Furthermore, we can consider
+the difference
+\begin{align*}
+  X_{k + 1} - S & = \frac{1}{2}(X_{k} + X_{k}\inv - 2S) \\
+                & = \frac{1}{2}X_{k}\inv(X_{k}^{2} - 2X_{k}S + I) \\
+                & = \frac{1}{2} X_{k}\inv (X_{k} - S)^{2} \quad \text{by
+                  commutativity.}                  
+\end{align*}
+By taking any consistent norm and using $\norm{AB}\le \norm{A}\norm{B}$, we
+have the desired norm inequality and this inequality displays the quadratic
+convergence.
+\end{proof}
+
+\subsubsection{Other Iterations}
+One straightforward variant of the Newton
+iteration~\eqref{eq.sign-reduced-newton} is the Newton--Schulz iteration.
+By considering removing the inversion in the Newton iteration, one can
+utilize the one-step Schulz iteration~\ycite[1933]{schu33},
+$X_{k+1} = X_{k}(2I - AX_{k})$, to estimate the inversion each step. The
+benefit of using Schulz iteration is that, as we iterates $X_k$ from $A$
+towards $\sign(A)$, $X_{k}$ is an increasingly good approximation to its
+inverse. Hence, to estimate $X_{k}\inv$, we use
+$X_{k}\inv \approx X_{k}(2I - X_{k}X_{k})$, and we got the Newton--Schulz
+iteration for the matrix sign function
+\begin{equation}\notag
+  X_{k + 1} = \frac{1}{2}X_{k}(3I - X_{k}^{2}),\quad X_{0} = A.
+\end{equation}
+This iteration is multiplication-rich and keeps the quadratic convergence
+of Newton's method. However, it is only locally convergent for
+$\norm{I - A^{2}} < 1$. The convergence result for the Newton--Schulz
+iteration was analyzed in terms of Pad\'e iteration by Kenney and
+Laub~\ycite[1991, Thm.~5.3]{kela91}. \comment{Any other convergence proof
+  except the Pad\'e approximation?}
+
+This ``approximate matrix inverse using Schulz iteration'' approach was
+first introduced by Schreiber and Parlett~\ycite[1988, Sec.~3.2.1]{scpa88}.
+Higham and Schreiber~\cite[1990]{hisc90} employed just one Schulz iteration
+for the polar decomposition and shown its convergence. Later, Kenney and
+Laub~\ycite[1991]{kela91} shown that the Newton--Schulz is actually a
+Pad\'{e} approximant.
+
+% initial proof of Newton Schulz is obtained by Kenney and Laub in [thm
+% 5.3]{kela91}
+For non-pure imaginary $z\in\C$, the $\sign(z)$ can be written as
+\begin{equation}\notag
+  \sign(z) = \frac{z}{(z^{2})^{1/2}} = \frac{z}{(1-(1-z^{2}))^{1/2}} =
+  \frac{z}{(1-\xi)^{1/2}},
+\end{equation}
+where $\xi = 1-z^{2}$. The task of approximating $\sign(z)$ leads to
+approximating $h(\xi) = (1-\xi)^{-1/2}$. The theory of the Pad\'{e}
+approximants of $h(\xi)$ is based on results for hypergeometric
+functions~\ycite[1975, Chap.~5]{bake75_pade}. Kenny and Laub provided a
+family of rational iteration functions which are the $[k/m]$ Pad\'{e}
+approximants to $h(\xi)$. These functions are rational functions
+$P_{km}/Q_{km}$ where $\deg(P_{km}) = k$, $\deg(Q_{km}) = m$, and
+\begin{equation}\notag
+  h(\xi) - \frac{P_{km}(\xi)}{Q_{km}(\xi)} = O(\xi^{k + m + 1}).
+\end{equation}
+It turns out that the $[1/0]$ approximant gives the Newton--Schulz
+iteration and the $[1/1]$ approximant gives the Halley's method. Here, we
+will not discuss these in full detail, but one may refer to the original
+paper~\ycite[1991]{kela91} or the book by Higham~\ycite[2008,
+Chap.~5.4]{high08_fm}.
+
+\subsubsection{Stability of Sign Iterations}
+For $A\in\C\nn$ that has no pure imaginary eigenvalues, by \ycite[2008,
+Thm.~5.13]{high08_fm}, if the iteration function $X_{k + 1} = g(X_{k})$ is
+superlinearly convergent to $\sign(X_{0})$ for all $X_{0}$ sufficient close
+to $\sign(A)$, and $g$ is independent of $X_{0}$, then the iteration is
+stable in the sense that the Fr\'echet derivative of the matrix sign
+function at $\sign(A)$ has bounded powers.
+
+However, the Newton iteration \eqref{eq.sign-reduced-newton} can be
+numerically unstable is not always bounded by a modest multiple of the
+condition number $\kappa_{\sign}(A)$\footnote{The condition number is
+  defined via \ycite[2008, p.~110]{high08_fm}}, and this is shown by
+applying the Newton iteration to a matrix with eigenvalues close to the
+imaginary axis~\ycite[2008, pp.~126-127]{high08_fm}. This instability was
+also pointed by Bai and Demmel~\ycite[1998, Sec.~2]{bade98}. They observed
+that when the eigenvalues of $A$ close to the pure-imaginary axis, the
+Newton iteration and its variations are very slowly convergent and may be
+mis-convergent.
+
+We can conduct the similar test from \ycite[2008, pp.~126-127]{high08_fm}
+\begin{lstlisting}
+clc; clear; close all; rng(1);
+d = 1/3;
+Q = rand_or(16); % generate random orth. mtx using qmult
+T = triu(randn(16)); T_diag = abs(diag(T));
+T_diag(1:8) = d * T_diag(1:8); 
+T_diag(9:16) = -1 * d * T_diag(9:16);
+T = T - diag(diag(T)) + diag(T_diag);
+A = Q * T * Q';
+[X,k] = signm_newton(A);
+fun = @(x) x/abs(x); 
+k_sign = funm_condest_fro(A,fun); % estimate the condition number
+\end{lstlisting}
+The functions \inline{signm_newton} at line 9 and \inline{funm_condest_fro}
+at line 11 are from \cite{high-mft}. With $d = 1/3$, the approximate
+condition number is $\kappa_{\sign} \approx \text{2.1e8}$. However,
+$\min_{k}\inorm{S - X_{k}}/\inorm{S} \approx \text{7.8e-2}$, which greatly
+exceeds $\kappa_{\sign}u \approx \text{2.4e-8}$.
+
+\subsection{Matrix Square Roots}
+\label{sec.matrix-square-roots}
+
+We will concerned with the principal square root \ycite[2008,
+Thm.~1.29]{high08_fm}. We denote by $\R^{-}$ the closed negative real axis.
+
+\begin{theorem}[principal square root]
+\label{thm.principal-sqrt}
+Let $A\in\C\nn$ have no eigenvalues on $\R^{-}$. There is a unique square
+root $X$ of $A$ all of whose eigenvalues lie in the open right half-plane,
+and it is a primary matrix function of $A$. We refer to $X$ as the
+principal square root of $A$ and write $X = A^{1/2}$.
+\end{theorem}
+
+
+\subsubsection{Schur Method}
+\label{sec.schur-method}
+Schur method, which initially presented by Bj\"{o}rck and Hammarling
+\ycite[1983]{bjha83} and extended to compute a real square root of a real
+matrix in real arithmetic by Higham~\ycite[1987]{high87_rsqrt}, can
+computes all the primary square root of a given matrix provided its
+eigenvalues does not lie on $\R^{-}$.
+
+\begin{algorithm}[H]
+\caption{(Schur method) Given a nonsingular $A\in\C\nn$ this algorithm
+  computes $X = \sqrt{A}$ via a Schur decomposition, where $\sqrt{\cdot}$
+  denotes any primary square root.}
+\label{alg.schur}
+\begin{algorithmic}[1]
+\State{Compute a (complex) Schur decomposition $A = QTQ\ctp$.}
+\State{$u_{ii} = \sqrt{t_{ii}},\ i = 1\colon n$}
+\For{$j = 2\colon n$}
+\For{$i = j - 1\colon -1 \colon 1$}
+\State{$\displaystyle u_{ij} = \frac{t_{ij} -
+    \sum_{k=i+1}^{j-1}u_{ik}u_{kj}}{u_{ii} + u_{jj}}$}
+\EndFor
+\EndFor
+\State{$X = QUQ\ctp$}
+\end{algorithmic}
+\end{algorithm}
+The cost of this algorithm is $25n^{3}$ for the Schur
+decomposition~\ycite[2013, Alg.~7.5.2]{gova13_mc4} plus $n^{3}/3$ for $U$
+and $3n^{3}$ to form $X$, which result in $28 \frac{1}{3}n^{3}$ flops in
+total.
+
+Following the language of \ycite[2002, Sec.~3.1]{high02_asna2}, if the
+computed diagonal elements satisfy
+$\wh u_{ii} = \sqrt{t_{ii}}(1 + \delta_{i})$, where
+$\abs{\delta_{i}} \le u$. Then, we have
+\begin{equation}\notag
+  \wh U^{2} = T + \varDelta T, \qquad \abs{\varDelta T} \le
+  \wt \gamma_{n}\abs{\wh U}^{2},
+\end{equation}
+where the inequality is to be interpreted elementwise. Computation of the
+Schur decomposition by the QR algorithm is backward stable process
+\ycite[2013, Sec.~7.5.6]{gova13_mc4}, and we have
+\begin{equation}\notag
+  \wh X^{2} = A + \varDelta A, \qquad \fnorm{\varDelta A} \le \wt
+  \gamma_{n^{3}} \fnorm{\wh X}^{2}.
+\end{equation}
+Using the expression $\alpha_{F}(\wh X) = \fnorm{\wh X}^{2}/\fnorm{A}$, we
+can rewrite the expression as
+\begin{equation}\notag
+  \frac{\fnorm{A - \wh X^{2}}}{\fnorm{A}} \le \wt
+  \gamma_{n^{3}}\alpha_{F}(\wh X).
+\end{equation}
+This analysis confirms the result in \ycite[1983]{bjha83}, which also shown
+that if $\alpha$ is not large, then the computed square root is the exact
+square root of a matrix close to $A$.
+
+A summary of the extension of the Schur method by
+Higham~\ycite[1987, Sec.~4.3]{high87_rsqrt} can be found in
+\ycite[2008, Sec.~6.2]{high08_fm}. Later in 2013, Deadman, Higham and
+Ralha~\ycite[2013]{dhr13} provided blocked Schur algorithms. MATLAB
+currently uses the Schur method with recursive blocking~\ycite[2020,
+Sec.~4]{hiho20} described in~\ycite[2013]{dhr13}. 
+
+Notice that, for Hermitian matrices, the Schur decomposition becomes the
+eigendecomposition, and the Schur method becomes
+Algorithm~\ref{alg:sqrt-eigdecomp}.
+
+
+
+\subsubsection{Newton's Method}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Polar Decomposition}
+\label{sec.polar-decomposition}
+
+\begin{theorem}[Polar decomposition]
+Let $A\in\C\nn$ be nonsingular. There exist a unique unitary matrix
+$U\in\C\nn$, and a unique Hermitian positive definite matrix $H\in\C\nn$
+such that $A = UH$. The matrix $H$ is determined by
+\begin{equation}\notag
+  (A\ctp A)^{1/2} = (H\ctp U\ctp U H)^{1/2} = (H^{2})^{1/2} = H. 
+\end{equation}
+Moreover, $U$ is uniquely determined by $U = AH\inv$.
+\end{theorem}
+
+\begin{proof}
+Full proof for general $A\in\C\mn$ can be found in \ycite[2008,
+Thm~8.1]{high08_fm}. Let $A\in\C\nn$ be nonsingular, and
+$A = P\varSigma Q\ctp$. Then, $H = Q\varSigma Q\ctp$ and $U = PQ\ctp$. We
+can check $H$ and $U$ by
+\begin{align*}
+  H^{2} & = Q\varSigma\varSigma Q\ctp = Q\varSigma P\ctp P\varSigma Q =
+          (P\varSigma Q\ctp)\ctp (P\varSigma Q) = A\ctp A, \\
+  U & = AH\inv = P\varSigma Q\ctp Q\varSigma\inv Q\ctp = PQ\ctp.
+\end{align*}
+The uniqueness of $H$ is ensured by \ycite[2008, Cor.~1.30]{high08_fm}.
+\end{proof}
+
+We will refer to $U$ as the unitary polar factor and $H$ as the Hermitian
+polar factor. It is sufficient to only consider the square, nonsingular
+matrices for the polar decomposition. Let $A\in\C\mn$ with $m\geq n$ have
+the QR factorization $A = QR$ where $Q\in\C^{m\times n}$ and $R\in\C\nn$.
+Then find the polar decomposition $R = UH$ and $A = QU\cdot H$ becomes the
+polar decomposition of $A$. In addition, if $A\in\C\mn$ is singular, we can
+compute a complete orthogonal decomposition
+
+\begin{equation}\notag
+  A = P
+  \begin{bmatrix}
+    R & 0 \\ 0 & 0 
+  \end{bmatrix}
+  Q\ctp,
+\end{equation}
+where $P,Q$ are unitary, and $R\in\C^{r\times r}$ is nonsingular and upper
+triangular. For more details of this decomposition, you may refer to
+Bj\"{o}rck~\ycite[1996, Def.~1.3.1]{bjor96_nmflsp}. Then, we may compute
+the polar decomposition of $R$ and assemble them together, according to
+\ycite[1990, Sec.~2]{hisc90},
+\begin{align*}
+  A & = P
+      \begin{bmatrix}
+        UH & 0 \\ 0 & 0
+      \end{bmatrix}
+      Q\ctp \\
+    & = P
+      \begin{bmatrix}
+        U & 0 \\ 0 & I_{m-r,n-r}
+      \end{bmatrix}
+      \begin{bmatrix}
+        H & 0 \\ 0 & 0
+      \end{bmatrix} Q\ctp \\
+    & = P
+      \begin{bmatrix}
+        U & 0 \\ 0 & I_{m-r,n-r}
+      \end{bmatrix}
+      Q\ctp Q
+      \begin{bmatrix}
+        H & 0 \\ 0 & 0
+      \end{bmatrix} Q\ctp \\
+    & \equiv U_{A}H_{A},
+\end{align*}
+where $I_{m-r,n-r}$ is the $(m-r)\times (n-r)$ identity
+matrix.\footnote{The identity matrix is $I_{m,n} = (\delta_{ij})\in\R\mn$.
+  \ycite[2008, App.~B.1]{high08_fm}}
+
+
+The fundamental connection between the matrix sign function and the polar
+decomposition is obtained from Theorem~\ref{thm.coupled-sign} by setting
+$B = A\ctp$,
+\begin{equation}\notag
+  \sign \left(
+  \begin{bmatrix}
+    0 & A \\ A\ctp & 0
+  \end{bmatrix}
+  \right) =
+  \begin{bmatrix}
+    0 & A(A\ctp A)^{-1/2} \\ (A\ctp A)^{1/2}A\inv & 0
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    0 & U \\ U\ctp & 0
+  \end{bmatrix}.
+\end{equation}
+
+
+
+
+
+
+
+% convergence for the polar-newton-schulz is discussed in bjbo71 --> 0 <
+% sigma(A) < sqrt(3)
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "do"
+%%% End:

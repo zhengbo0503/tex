@@ -1,0 +1,6 @@
+{
+    "latex-workshop.latex.recipe.default": "BIB",
+    "cSpell.ignoreWords": [
+        "eigen"
+    ]
+}

@@ -1,0 +1,35 @@
+#+TITLE: Accuracy of Square Root of Positive Definite Matrix
+#+AUTHOR: Zhengbo Zhou
+
+* Introduction
+
+*All the matrices we dealt are all *Hermitian positive definite!*
+i.e. $A = A^*,\ \lambda_i(A) > 0$ for all $i$.
+
+In /Functions of Matrices/, Section 6.8.4, there is an algorithm for computing the square root of the Hermitian positive definite matrix.
+
+*ALGORITHM 1*
+#+BEGIN_EXAMPLE
+Compute A = R' * R (Cholesky factorisation)
+Compute R = U * H (by any method)
+#+END_EXAMPLE
+
+
+Does this algorithm have any special accuracy property compare with, say, 
+
+*ALGORITHM 2*
+Computing $A^{1/2}$ using the spectral decomposition
+
+\begin{equation}
+A = Q\Lambda Q^*, \qquad {A}^{1/2} = Q {\Lambda}^{1/2}Q^*. 
+\end{equation}
+
+
+Since $\Lambda$ has positive entries, hence it will be straighforward to take square roots of each entries of $\Lambda$. This method could use the high accuracy SVD algorithm by Drmac and Veselic.
+
+- This will depends on which method we used to compute the Hermitian polar factor. In the book, it suggests the Newton method, is there any other better choice? Such as the DV-SVD?
+- How we compute the eigendecomposition of the positive definite matrix? Since the SVD of a positive definite matrix is coincide with its eigendecomposition (is it?), we can make use of the high accuracy property of the DV-SVD.
+
+
+
+

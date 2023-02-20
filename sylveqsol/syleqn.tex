@@ -1,0 +1,159 @@
+\documentclass{article}
+\def\ntitle {Sylvester Equation Solver}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+% \def\ndate{ } % default is today's date
+% \def\needcrop{ } % crop for easy previewing
+% \def\fancysec{ } % section font become fancier 
+\input{/Users/clement/Dropbox/bibtex/clem.tex}
+
+%% redefine \emph and \bf such that they are colored and can be easily
+%% transformed back to normal \emph and \bf
+\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\thispagestyle{firstpage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\label{sec.introduction}
+
+Let $A\in\R^{m\times m}$ and $B\in\R\nn$ be given matrices and
+define the linear transformation: $\phi(X) :\R\mn \to \R\mn$ by 
+\begin{equation}\notag
+  \phi(X) = AX + XB.
+\end{equation}
+The linear transformation is nonsingular if and only if $A$ and $-B$ have
+no eigenvalues in common.
+This has been formalized by Bhatia and Rosenthal in \cite{bhro97}
+and we will discussed in the Section \ref{sec.solv-sylv-equat}.
+
+Linear equations of the form
+\begin{equation}\label{eq.sylv-eqn}
+  \phi(X) = AX + XB = C
+\end{equation}
+is called the Sylvester equation,
+which first studied by James Joseph Sylvester in 1884.
+In his paper, he considered the homogeneous case $AX - XB = 0$.
+
+\subsection{Solvablility of the Sylvester Equation}
+\label{sec.solv-sylv-equat}
+Let us first discuss a simple case when $B = -A$.
+The Sylvester equation \eqref{eq.sylv-eqn} becomes
+\begin{equation}\label{eq.simple-sylv}
+  AX - XA = C,
+\end{equation}
+and taking the trace of both sides gives
+\begin{equation}\notag
+  \tr(C) = \tr(AX - XA) = \tr(AX) - \tr(XA) = 0. 
+\end{equation}
+Hence for the simplified Sylvester equation~\eqref{eq.simple-sylv},
+a solution can exist only when $C$ has zero trace.
+For example, $AX - XA = I$ has no solution. 
+
+For the matrix case, Sylvester proved it in his original paper.
+Moreover, Rosenblum \cite{rose69} provided a operator case later.
+
+\begin{theorem}[Sylvester-Rosenblum Theorem]
+\label{thm.sylv-rose}
+If $A$ and $B$ are operators such that
+$\sigma(A)\cup \sigma(-B) = \emptyset$,
+then the equation $AX + XB = Y$ has a unique solution $X$ for
+every operator $Y$.
+\end{theorem}
+
+\begin{proof}
+The proof can be seen from the later section when we discuss the
+Bartel-Stewart algorithm.
+\end{proof}
+
+\section{The Bartels-Stewart Algorithm}
+In 1972, Bartels and Stewart proposed an algorithm that computes the
+solution to the Sylvester equation~\ycite[1972]{bast72}.
+This method has enjoyed considerable success \ycite[1976]{bemc76}.
+The crux of the Bartels-Stewart algorithm is to use the QR algorithm
+to compute the real Schur decomposition
+\begin{equation}\label{eq.bsalg.decomp}
+  A = U R U\tp, \quad B = V S V\tp,
+\end{equation}
+where $R,S$ are upper quasi-triangular and $U$ and $V$ are orthogonal.
+Then, we premultiplying the Sylvester equation $AX + XB = C$ by $U\tp$
+and postmultiplying by $V$, we have
+\begin{equation}\label{eq.upper-tri-sylv}
+  U\tp C V = U\tp A X V + U\tp X B V = U\tp A UU\tp X V + U\tp X VV\tp B V.
+\end{equation}
+Let $F\coloneqq U\tp CV$ and $Y = U\tp XV$, the Sylvester equation becomes
+\begin{equation}\notag
+  F = RY + YS, \qquad \text{$R,S$ are quasi-upper triangular.}
+\end{equation}
+Consider $Y = [y_{1}|\cdots|y_{n}]$ and $F = [f_{1}|\cdots|f_{n}]$,
+the \eqref{eq.upper-tri-sylv} can be decompose to $n$ upper triangular
+linear system, where the $j$th columns on both sides leads to
+\begin{equation}\label{eq.sylv-linear-sys}
+  (R + s_{jj}I)y_{j} = f_{j} - \sum_{k=1}^{j-1}s_{kj}y_{k},
+  \qquad j = 1\colon n.
+\end{equation}
+This is a upper triangular linear system which can be solved by backward
+substitution efficiently. From \eqref{eq.sylv-linear-sys}, $y_{j}$ is
+uniquely determined if and only if $R + s_{jj}I$ is not singular, which
+means $\Lambda(R)\cup \Lambda(-S) = \emptyset$ and this proves Theorem
+\ref{thm.sylv-rose}. Finally, if $Y$ can be uniquely determined, then $X$
+can also be uniquely determined via $X = UYV\tp$.
+
+\section{The Hessenberg-Schur Algorithm}
+\label{sec.hess-schur-algor}
+
+In this section, we provide another algorithm described by Golub, Nash and
+Van Loan~\cite{gnv79} which, instead of, computing the Schur decomposition,
+it uses an upper Hessenberg matrix instead. Namely, it modified
+\eqref{eq.bsalg.decomp} into
+\begin{align*}
+  H = & U \tp A U, \qquad \text{$H$ is upper Hessenberg,} \\
+  S = & V \tp B V, \qquad \text{$S$ is upper triangular.}
+\end{align*}
+Recall that a matrix $H = (h_{ij})$ is upper Hessenberg if $h_{ij} = 0$ for
+all $i > j + 1$. The orthogonal reduction of $A$ to upper Hessenberg form
+can be accomplished by Householder matrices in $10m^{3}/3$
+flops~\ycite[2013, Alg.~7.4.2]{gova13_mc4}, and this is a significant
+reduction in computational expenses. For general matrix $A$, a Schur
+decomposition will typically requires $10n^{3}$ flops according to
+\ycite[1979]{gnv79}. Then, following the exactly same procedure, we can
+transform the Sylvester equation \eqref{eq.sylv-eqn} into
+\begin{equation}\notag
+  HY + YS = F, \quad (H + s_{jj}I)y_{j} = f_{j} -
+  \sum_{k=1}^{j-1}s_{kj}y_{k},
+  \qquad j = 1\colon n. 
+\end{equation}
+The above system can be solved using Gaussian elimination with partial
+pivoting, and it only requires $O(m^{2})$  flops after the right-hand side
+has been computed. 
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
+\bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
+  /Users/clement/Dropbox/bibtex/ref.bib} 
+%% APPENDICES
+
+
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

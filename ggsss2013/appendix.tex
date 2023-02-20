@@ -1,0 +1,46 @@
+\appendix
+\section{Supplimentary}
+\subsection{Figure~\ref{fig:FDM_error}}\label{app.fdm_error}
+\begin{lstlisting}[numbers=none]
+% we would like to find the total error (truncation error + roundoff
+% error) of f(x) = x^2 near x = 1. f'(x) = 2x.
+clc; clear; close all;
+power = -1:-1e-3:-16;
+h = 10; h = h.^power;
+error = zeros(length(h),1);
+ref = 2; 
+MC = 50;
+for i = 1:length(h)
+    acc = 0;
+    for j = 1:MC
+        acc = acc + ((1+h(i))*(1+h(i)) - 1)/h(i) - 2;
+    end
+    error(i) = acc/MC;
+end
+loglog(h,abs(error));
+xlabel("Time step $(h)$");
+ylabel("Total Error");
+set(gca,"FontSize",20);
+\end{lstlisting}
+
+\subsection{Proof in Section~\ref{sec.smsqrt}}\label{app.proof_smsqrt}
+We would like to prove for $g(X) = \frac{1}{2}(X +X\inv A)$. The \FD\ is
+given by $L_{g}(X,E) = (E-X\inv EX\inv A)/2$.
+
+\begin{proof}
+    $g(X+E)-g(X) = (E + (X+E)\inv A - X\inv A)/2$. Remain to expand
+    $(X+E)\inv$: Consider the expansion of $(X+E)\inv$,
+    \begin{equation}\notag
+        \begin{aligned}
+            (X+E)\inv & = (X(I+X\inv E))\inv = (I+X\inv E)\inv X\inv \\
+            & = (f(I) + f'(I)X\inv E + \mc O(\norm{E}^2))X\inv \\
+            & = (I + (-I^2)X\inv E)X\inv + \mc O(\norm{E}^2)\\
+            & = X\inv - X\inv EX \inv + \mc O(\norm{E}^2).
+        \end{aligned}
+    \end{equation}
+    Going back to $L_{g}(X,E)$, we have 
+    \begin{equation}\notag
+        g(X+E)-g(X)=(E+ (X\inv - X\inv EX \inv + \mc O(\norm{E}^2))A - X\inv A)/2,
+    \end{equation}
+    expanding out yields the result.
+\end{proof}

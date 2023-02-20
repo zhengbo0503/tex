@@ -1,0 +1,253 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%% Systematic Settings %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% DEFINE ntitle/nauthor/notes/ndate
+\RequirePackage{etex}
+\makeatletter
+\ifx \nauthor\undefined
+  \def\nauthor{Zhengbo Zhou}
+\else 
+\fi 
+\ifx \ndate\undefined 
+  \def\ndate{\today}
+\else 
+\fi 
+\ifx \notes\undefined 
+\else
+    \makeatletter
+    \renewcommand\maketitle
+        {\noindent
+            {\large\scshape\ntitle}
+            \medskip\par\noindent
+            {\slshape\nauthor}
+            \hfill
+            {\normalsize\itshape\ndate}
+            \bigskip\par\noindent
+        }
+    \makeatother
+\fi
+
+\author{\nauthor \thanks{
+Department of Mathematics,
+University of Manchester,
+Manchester, M13 9PL, England
+(\texttt{zhengbo.zhou@postgrad.manchester.ac.uk}).
+}}
+\date{\ndate}
+\title{\ntitle}
+
+%% Required Packages
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{comment}
+\usepackage{bookmark}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{mathrsfs}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[theorems]{tcolorbox}
+\usepackage{bm}
+\usepackage{cancel}
+\usepackage{bbm}
+\usepackage{accsupp}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[fontsize=12pt]{fontsize}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{anyfontsize}
+\usepackage[hyperpageref]{backref}
+
+%% Avoid badscalings
+\renewcommand\hmmax{0}
+\renewcommand\bmmax{0}
+\hbadness=99999
+
+%% page size
+\geometry{
+  a4paper,
+  textwidth=159truemm,
+  textheight=240truemm,
+  top=24.5truemm,
+}
+
+%% table of content settings
+\setcounter{tocdepth}{2}
+
+%% hyperref and backref
+\hypersetup{
+    hypertexnames=false, 
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={green!50!black},
+    urlcolor={blue!80!black},
+    pdfauthor={Zhengbo Zhou},
+    pdftitle={\ntitle},
+    pdfcreator={Zhengbo Zhou via MikTeX}
+}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{
+    \ifcase #1 
+    No citations.
+    \or
+    (Cited on p.~#2.)
+    \else
+    (Cited on pp.~#2.)
+    \fi
+}
+
+%% header and footer
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \lhead{\textit{\nouppercase{\leftmark}}}
+    \rhead{\ntitle}
+    \cfoot{\thepage\ of \pageref*{LastPage}}
+}
+\fancypagestyle{firstpage}[plain]{
+    \renewcommand{\headrulewidth}{0pt}
+    \fancyhead[L,C,R]{}
+    \fancyfoot[L,C,R]{}
+}
+\pagestyle{plain}
+
+%% colorboxes
+\tcbuselibrary{breakable}
+\newtcolorbox{mycolorbox}[1]{ % grey background box
+    colback=white!90!black,
+    colframe=white!40!black,
+    fonttitle=\scshape\centering,
+    title=#1
+}
+\newtcolorbox{mybox}[1]{ % pure white box with border
+    colback=white,
+    colframe=black,
+    boxrule=0.75pt,
+    breakable,
+    arc=0pt,
+    outer arc=0pt,
+    fonttitle=\scshape\bfseries
+} 
+
+%% redefine \emph and \bf such that they are colored and can be easily
+%% transformed back to normal \emph and \bf
+\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+
+%% Theorems 
+\newtheorem{theorem}{Theorem}[section] % Italic font 
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition} % upright font
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem*{question}{Question}
+\newtheorem*{recall}{Recall}
+\newtheorem*{assumption}{Assumption}
+\newtheorem*{note}{Note}
+
+\numberwithin{equation}{section} % equation numbers
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%% USER DEFINED MACROS %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% MATHBB
+\newcommand{\mb}[1]{\mathbb{#1}}
+\newcommand{\N}{\mb{N}}
+\newcommand{\Z}{\mb{Z}} 
+\newcommand{\Q}{\mb{Q}}
+\newcommand{\R}{\mb{R}} 
+\newcommand{\C}{\mb{C}}
+\newcommand{\F}{\mb{F}}
+\renewcommand{\P}{\mb{P}} %% Probability
+\newcommand{\E}{\mb{E}} %% Expectation
+\newcommand{\V}{\mb{V}} %% Variance
+
+%%%%%% MATHCAL and MATHSCR
+\newcommand{\mc}[1]{\mathcal{#1}} %% For spaces 
+\newcommand{\ms}[1]{\mathscr{#1}} %% For sigma-algebra
+
+%% Paired labels
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil} % ceiling 
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}  % floors
+\DeclarePairedDelimiter\inner{\langle}{\rangle} %% <a>
+\DeclarePairedDelimiter\abs{\lvert}{\rvert} %% |a|
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+
+%% vector bold
+\renewcommand{\vec}[1]{\bm{#1}}
+
+%% Real and Imaginary
+\renewcommand{\Re}[1]{\mathrm{Re}\left\{{#1}\right\}}
+\renewcommand{\Im}[1]{\mathrm{Im}\left\{{#1}\right\}}
+
+%% Integrate from ... to ...
+\newcommand{\intii}{\int_{-\infty}^{\infty}}
+
+%% Greek Letters
+% NEVER define \l for \lambda due to Polish names in BibTeX
+\newcommand{\eps}{\varepsilon}
+
+%% Matrix Analysis
+\newcommand{\Rn}{\R^n}
+\newcommand{\Cn}{\C^n}
+\newcommand{\n}{^{n}}
+\newcommand{\m}{^{m}}
+\newcommand{\mn}{^{m\times n}}
+\newcommand{\nn}{^{n\times n}}
+\newcommand{\tp}{^{T}} % transpose 
+\newcommand{\ctp}{^{*}} % conjugate transpose
+\newcommand{\inv}{^{-1}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\tr}{trace}
+\DeclareMathOperator{\range}{Range}
+\newcommand{\iter}[1]{^{(#1)}} %% iteration \iter{}
+
+%% Norms
+\newcommand{\norm}[1]{\|{#1}\|}
+\newcommand{\fnorm}[1]{\norm{#1}_F}
+\newcommand{\tnorm}[1]{\norm{#1}_2} % 2-norm
+\newcommand{\inorm}[1]{\norm{#1}_\infty} % infinity norm
+
+%% Over the expressions
+\newcommand{\wh}{\widehat}
+\newcommand{\wt}{\widetilde}
+\newcommand{\wb}{\overline}
+
+%% Calculus
+\newcommand{\lap}{\varDelta}
+\DeclareMathOperator{\grad}{\nabla}
+\renewcommand{\div}{\nabla\cdot}
+\DeclareMathOperator{\curl}{\nabla\times}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\pp}{\partial}
+\def\eu{\mathrm{e}} % euler's constant
+\def\im{\mathrm{i}} % imaginary unit
+\DeclareMathVersion{bold}
+\newcommand{\indi}{\mathbbm{1}} %% indicator function
+
+%% Citation % nick
+\def\ycite[#1#2#3#4#5]#6{\cite[$\mit{#1#2#3#4}$#5]{#6}}
+
+\usepackage{anyfontsize}
+\usepackage{newtxtext}     
+\usepackage[varvw]{newtxmath} 
+\def\ttdefault{cmtt}
+% \usepackage[ bb=ams ]{mathalpha}
+
+\makeatother
+

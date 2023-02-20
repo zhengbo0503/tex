@@ -1,0 +1,301 @@
+\documentclass{article}
+\def\ntitle {LAPACK Eigen/SVD-Solvers}
+% \def\nauthor{ } % default author is Zhengbo Zhou
+% \def\notes{ } % default is the submitted version
+\def\ndate{ } % default is today's date
+% \def\needcrop{ }
+\def\fancysec{ }
+\input{/Users/clement/Dropbox/bibtex/clem.tex}
+
+\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+
+\newcommand{\code}[1]{\texttt{\color{green!30!black} #1}}
+
+\begin{document}
+\maketitle
+% \tableofcontents
+\thispagestyle{firstpage} 
+
+
+\begin{abstract}
+    This note concentrate on
+    paper~\cite{gms22,zhba22}. 
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+LAPACK provides several solvers for symmetric eigenvalue problems(SYP). 
+However, the Jacobi algorithm is not explicitly used in the LAPACK 
+routines for SYP. 
+Several papers using LAPACK's singular value decomposition(SVD) routines
+to help computing the eigenvalues. 
+
+This note is based on the following two papers
+\cite{gms22} and \cite{zhba22}.
+
+\begin{itemize}[nosep]
+    \item Weiguo Gao, Yuxin Ma, and Meiyue Shao.
+    \href{https://arxiv.org/abs/2209.04626}{A mixed precision
+    {Jacobi} {SVD} algorithm}. {\em ArXiv}, 2022.
+    \item Zhiyuan Zhang and Zheng-Jian Bai.
+    \href{https://arxiv.org/abs/2211.03339}{A mixed precision {Jacobi}
+      method for the symmetric eigenvalue problem}.{\em ArXiv}, 2022.
+  \end{itemize}
+
+\subsection{LAPACK Name Scheme}
+All drives and computational routines have names of the form 
+\bf{XYYZZZ}, where for some driver routine the 6th character is blank.
+
+The first letter, \bf{X}, indicates the data type as follows:
+\begin{equation}\notag
+    \begin{aligned}
+        \text{S} \quad & \text{Real} \\
+        \text{D} \quad & \text{Double Precision} \\ 
+        \text{C} \quad & \text{Complex} \\ 
+        \text{Z} \quad & \text{Double Complex}
+    \end{aligned}
+\end{equation}
+When we wish to refer to an LAPACK routine generically, regardless of
+data type, we replace the first letter by ``x''. Thus xGESV refers to
+any or all of the routines \code{SGESV}, \code{CGESV}, \code{DGESV} and
+\code{ZGESV}.
+
+The next two letters, \bf{YY}, indicate the type of matrix (or of the
+most significant matrix). Most of these two-letter codes apply to both
+read and complex matrices; a few apply specifically to one or the other,
+as indicated in Table~\ref{tab.LNS}.
+
+\begin{table}[ht]
+    \centering
+    \caption{Matrix types in the LAPACK naming scheme}
+    \label{tab.LNS}
+    \begin{tabular}{c p{0.9\linewidth}}
+        \toprule
+        BD & \bf{B}i\bf{D}iagonal\\
+        DI & \bf{DI}agonal\\
+        GB & \bf{G}eneral \bf{B}and \\ 
+        GE & \bf{GE}neral (i.e. unsymmetric, in some cases rectangular)
+        \\
+        GG & \bf{G}eneral matrices, \bf{G}eneralized problem (i.e. a
+        pair of general matrices) \\
+        GT & \bf{G}eneral \bf{T}ridiagonal \\
+        HB & (complex) \bf{H}ermitian \bf{B}and\\
+        HE & (complex) \bf{HE}rmitian\\
+        HG & upper \bf{H}essenberg matrix, \bf{G}eneralized problem
+        (i.e. a Hessenberg and a triangular matrix)\\
+        HP & (complex) \bf{H}ermitian, \bf{P}acked storage\\
+        HS & upper \bf{H}e\bf{S}senberg\\
+        OP & (real) \bf{O}rthogonal, \bf{P}acked storage\\
+        OR & (real) \bf{OR}thogonal \\
+        PB & symmetric or Hermitian \bf{P}ositive definite \bf{B}and \\
+        PO & symmetric or Hermitian \bf{PO}sitive definite \\
+        PP & symmetric or Hermitian \bf{P}ositive definite, \bf{P}acked storage \\
+        PT & symmetric or Hermitian \bf{P}ositive definite \bf{T}ridiagonal \\
+        SB & (real) \bf{S}ymmetric \bf{B}and \\
+        SP & \bf{S}ymmetric, {P}acked storage \\
+        ST & (real) \bf{S}ymmetric \bf{T}ridiagonal \\
+        SY & \bf{SY}mmetric \\
+        TB & \bf{T}riangular {B}and \\
+        TG & \bf{T}riangular matrices, \bf{G}eneralized problem (i.e., a pair of triangular matrices)\\
+        TP & \bf{T}riangular, \bf{P}acked storage\\
+        TR & \bf{TR}iangular (or in some cases quasi-triangular)\\
+        TZ & \bf{T}rape\bf{Z}oidal\\
+        UN & (complex) \bf{UN}itary\\
+        UP & (complex) \bf{U}nitary, \bf{P}acked storage\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+When we wish to refer to a class of routines that performs the same
+function on different types of matrices, we replace the first three
+letters by ``xyy''. Thus \code{xyySVX} refers to all the expert driver
+routines for systems of linear equations that are listed in
+Table~\ref{tab.LNS}.
+
+The last three letters \bf{ZZZ} indicate the computation performed. They
+are explained in \ycite[1999, Sec~2.4]{abbb99_LUG}.
+For example, \code{SGEBRD} is a \bf{S}ingle precision routine that
+performs a bidiagonal reduction (\bf{BRD}) of a real \bf{GE}neral
+matrix. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{LAPACK Routine for SVD Problem by \cite{gms22}}
+
+The paper~\cite{gms22} is working with the SVD problem rather
+the SEP. However, they point out the following LAPACK routines that they
+used for their implementation of the Jacobi SVD. We will list these
+routines and give some brief introductions to them.
+
+The following 4 routines are used in \cite{gms22} for computing
+SVD. 
+\begin{itemize}[nosep]
+    \item[Section \ref{sec.DGEJSV}] \code{S/D/C/Z GE JSV}
+    \item[Section \ref{sec.DGESVJ}] \code{S/D/C/Z GE SVJ}
+    \item[Section \ref{sec.DGEQRF}] \code{S/D/C/Z GE QRF}
+    \item[Section \ref{sec.SGESVD}] \code{S/D/C/Z GE SVD}
+\end{itemize}
+
+The following 2 routines are used in \cite{gms22} for computing
+eigendecomposition. 
+\begin{itemize}[nosep]
+    \item[Section \ref{sec.DSYEV}] \code{S/D SY EV}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection[\code{DGEJSV}]{\code{DGEJSV} : Double Precision, General
+Matrices, Preconditioned Jacobi SVD Algorithm}
+\label{sec.DGEJSV}
+\code{DGEJSV} : Computes the \emph{singular value
+decomposition} of a matrix $A \in \R\mn$, where $m \ge n$.
+\code{DGEJSV} can sometimes compute tiny singular values and their
+singular vectors much more accurately than other SVD routines.
+\code{DGEJSV} implements a \emph{preconditioned Jacobi SVD
+algorithm}. It uses \code{DGEQP3}, \code{DGEQRF}, and \code{DGELQF}
+as a preprocessor, which in some cases results in much higher
+accuracy.  
+
+\begin{example}
+    Suppose matrix $A$ has the structure $A = D_1CD_2$, where $D_1$ and
+    $D_2$ are arbitrarily ill-conditioned diagonal matrices and $C$ is
+    well-conditioned matrix. In this case, complete pivoting in the
+    first QR factorizations provides accuracy dependent on the condition
+    number of $C$, and independent of $D_1$ and $D_2$. 
+\end{example}
+
+\begin{example}
+    If $A$ can be written as $A = BD$, with well-conditioned $B$ and
+    some diagonal $D$, then the high accuracy is guaranteed, both
+    theoretically and in software, independent of $D$. 
+\end{example}
+For more details, see \cite{drve08i,drve08ii}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection[\code{DGESVJ}]{\code{DGESVJ} : Double Precision, General
+Matrices, Computing SVD using Jacobi Plane Rotations}
+\label{sec.DGESVJ}
+\code{DGESVJ} computes the SVD of a matrix $A \in \R\mn$, where $M \ge
+N$. The SVD of $A$ is written as 
+\begin{equation}\notag
+    A = U \Sigma V \tp.
+\end{equation}
+\code{DGESVJ} can sometimes compute tiny singular values and their
+singular vectors much more accurately than other SVD routine. 
+
+The orthogonal $n \times n$ matrix $V$ is obtained as a product of
+Jacobi plane rotations. The rotations are implements as fast scaled
+rotations of Anda and Park~\cite{anpa94}. In case of underflow of
+the Jacobi angle, a modified Jacobi transformation of
+Drma\u{c}~\cite{drma97} is used. The relative accuracy of
+the computed singular values and the accuracy of the computed singular
+vectors (in angle metric) is as guaranteed by the theory of Demmel and
+Veselic~\cite{deve92}. The condition number that determines the
+accuracy in the full rank case is essentially $\min_{\Delta\text{ is
+diagonal}}\kappa_2(A\Delta)$. The best performance of this Jacobi SVD
+procedure is achieved if used in an accelerated version of Drma\u{c} and
+Veseli\'{c}~\cite{drve08i,drve08ii}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection[\code{DGEQRF}]{\code{DGEQRF} : Double Precision, General
+Matrices, QR Factorization}
+\label{sec.DGEQRF}
+\code{DGEQRF} : Computes a QR factorization of a real $m\times n$ matrix
+$A$: 
+\begin{equation}\notag
+    A = Q \times 
+    \begin{bmatrix}
+        R \\ 0
+    \end{bmatrix}
+\end{equation} 
+where $Q \in \R^{m\times m}$ is orthogonal, $R \in \R\nn$ is an upper
+triangular matrix, and $0$ is a $(m-n)\times n$ zero matrix if $m > n$.
+The matrix $Q$ is represented as a product of elementary reflectors 
+\begin{equation}\notag
+    Q = H_1 H_2 \cdots H_k, \quad k = \min(m,n).
+\end{equation}
+Each $H_i$ has the form 
+\begin{equation}\notag
+    H_i = I - \tau vv\tp 
+\end{equation}
+where $\tau$ is a real scalar, and $v$ is a real vector with $v(1:i-1) =
+0$ and $v(i) = 1$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection[\code{DGESVD}]{\code{DGESVD} : Single Precision, General
+Matrices, Singular Value Decomposition}
+\label{sec.SGESVD}
+\code{DGESVD} computes the singular value decomposition (SVD) of a real
+$m\times n$ matrix $A$. The SVD is written 
+\begin{equation}\notag
+    A = U \Sigma V\tp
+\end{equation}
+where $\Sigma \in \R\mn$ is an matrix which is zero except for its
+$\min(m,n)$ diagonal elements, and $U\in\R^{m\times m}, V \in \R\nn$ are
+orthogonal matrices. The diagonal elements of $\Sigma$ are the singular
+values of $A$; they are real and non-negative, and are returned in
+descending oreder. The first $\min(m,n)$ columns of $U$ and $V$ are the
+left and right singular vectors of $A$.
+
+\code{xGESVD}, where $\code{x} \in \code{S,C}$, computes the SVD of a
+general matrix by 
+\begin{itemize}[nosep]
+    \item Reducing it to bidiagonal form $B$ via routine
+    \code{xGEBRD}\footnote{\code{xGEBRD} reduce a general $m\times n$
+    matrix $A$ to 
+    upper or lower bidiagonal form $B$ by an orthogonal transformation:
+    $Q\tp AP = B$.}.
+    \item Call \code{xBDSQR}\footnote{\code{xBDSQR} computes the
+    singular values of a 
+    real $n\times n$ bidiagonal matrix $B$ using the implicit zero-shift
+    QR algorithm.} to compute the SVD of $B$.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection[\code{DSYEV}]{\code{DSYEV} : Double Precision, Symmetric
+Matrices, Eigendecomposition}
+\label{sec.DSYEV}
+\code{DSYEV} : A \emph{simple} driver computes all the eigenvalues and
+(optionally) eigenvectors by 
+\begin{itemize}[nosep]
+    \item Call \code{SSYTRD} to reduce symmetric matrix to tridiagonal
+    form. 
+    \item For eigenvalues only, call
+    \code{SSTERF}\footnote{\code{SSTERF} computes all
+    eigenvalues of a symmetric tridiagonal matrix using the
+    Pal-Walker-Kahan variant of the QL or QR algorithm.}. 
+    For eigenvectors, first call \code{SORGTR}\footnote{\code{SORGTR}
+    generates a real orthogonal matrix $Q$ which is defined as the
+    product of $n-1$ elementary reflectors of order $N$.} to generate
+    the orthogonal matrix, then call
+    \code{SSTEQR}\footnote{\code{SSTEQR} computes all eigenvalues and,
+    optionally, eigenvectors of a symmetric tridiagonal matrix using the
+    implicit QL or QR method.  The eigenvectors of a full or band
+    symmetric matrix can also be found if \code{SSYTRD} has been used
+    to reduce this matrix to  tridiagonal form.}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{remark}
+    Paper~\ycite[2022]{zhba22} uses \code{SSYEV} to compute the
+    eigenvalues and eigenvectors of a given matrix in low precision.
+\end{remark}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
+\bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
+  /Users/clement/Dropbox/bibtex/ref.bib} 
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-master: t
+%%% TeX-master: t
+%%% TeX-master: t
+%%% TeX-master: t
+%%% End:
