@@ -7,5 +7,5 @@ These are mainly from the problem that I am working on.
 
 Several selected project:
 - [[file:accofsqrt/][Project: Accuracy of the square root of Hermitian positive definite matrix]]
-- [[file: zhou22_msc/][MSc Project: Mixed-precision Jacobi Eigenvalue Algorithm]]
+- [[file:zhou22_msc/][MSc Project: Mixed-precision Jacobi Eigenvalue Algorithm]]
 - [[file:polar_proj/][Project: Polar Decomposition]]
