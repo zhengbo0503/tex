@@ -17,15 +17,14 @@ in~\ycite[2008, Alg.~6.21]{high08_fm}.
   algorithm computes $H = A^{1/2}$.}
 \label{alg:sqrt-higham}
 \begin{algorithmic}[1]
-\State{Compute the Cholesky factorization $A = RR\tp$.}
+\State{Compute the Cholesky factorization $A = R\tp R$.}
 \State{Compute the Hermitian polar factor $H$ of $R$ by applying any method
   (exploiting the triangularity of $R$).} 
 \end{algorithmic}
 \end{algorithm}
 
 Since we are focused on the Hermitian positive definite matrices, the Schur
-decomposition of $A$, its eigendecomposition and its singular value
-decomposition coincide.
+decomposition of $A$ and its eigendecomposition coincide.
 Therefore, we can simplify the Schur method, discussed in
 Section~\ref{sec.schur-method}, and get 
 \begin{algorithm}[h]

@@ -1,0 +1,431 @@
+\section{LR Algorithm}
+% 1. iterative refinement using LR algorithm then maybe using Jacobi to do
+% the remaining steps.
+% 2. LR algorithm consist of Cholesky factorization and matrix
+% multiplication which are all very accurate. Is this competitive with
+% existing methods? 
+% 3. Can we modify LR algorithm such that it computes the matrix square
+% root directly? 
+%
+% Maybe Cholesky QR
+
+\subsection{Introduction} \label{sec.lr-intro}
+\begin{theorem} \label{thm.chol}
+For $A = A\tp \in\R\nn$, the following conditions are equivalent,
+\begin{enumerate}[label=\upshape(\alph*)]
+\item
+$A$ is positive definite, i.e. $x\tp A x > 0$ for all nonzero $x\in\R\n$.
+\item
+There is a unique upper triangular matrix $R\in\R\nn$ with positive
+diagonal elements such that $A = R\tp R$. This is called the Cholesky
+factorization of $A$.
+\item
+All the eigenvalues of $A$ are positive.
+\item
+$\det(A_{k}) > 0$, $k = 1\colon n$ where $A_{k}$ is the leading principal
+submatrix of order $k$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proposition}\label{prop.diag-posi}
+If $A\in\R\nn$ is symmetric positive definite, then $a_{ii} > 0$ for all $i$.
+\end{proposition}
+\begin{proof}
+Taking $x = e_{i}$, where $e_{i}$ is the $i$th column of the identity
+matrix. Then $e_{i}\tp A e_{i} = a_{ii} > 0$.
+\end{proof}
+
+
+The LR algorithm is developed by Rutishauser when he was working on the
+quotient--difference algorithm. The algorithm can be summarized as follows,
+given $A\in\C\nn$, then let $A_{0} = A$, and do the following iteration,
+\begin{equation}\notag
+  \left.
+  \begin{aligned}
+    A_{k} & = L_{k} U_{k},\quad  \\
+    A_{k+1} & =  U_{k}L_{k},
+  \end{aligned}
+  \right\} \quad \text{for $k = 0,1,\dots.$}
+\end{equation}
+This has been shown by Rutishauser and Wilkinson that $A_{k}$ converges to
+an upper triangular matrix where the diagonal entries are the eigenvalues
+of $A$. This can be seen from the following trick,
+\begin{equation}\notag
+  A_{k+1} = U_{k}L_{k} = L_{k}\inv L_{k}U_{k}L_{k} = L_{k}\inv A_{k} L_{k}.
+\end{equation}
+We can do this process inductively, and finally we conclude that $A_{k+1}$
+is a similar transformation of $A$, where
+\begin{equation}\notag
+  A_{k+1} = (L_{k}L_{k-1}\cdots L_{1}) A (L_{k}L_{k-1}\cdots L_{1})\inv.  
+\end{equation}
+
+\subsection{Cholesky LR Algorithm}
+\label{sec.chol-lr-algor}
+The algorithm in Section~\ref{sec.lr-intro} can be modified for symmetric
+positive definite matrices by replacing the LU factorization by the
+Cholesky factorization.
+\begin{algorithm}
+\caption{Cholesky LR Algorithm.}
+\label{alg.clr}
+\begin{algorithmic}[1]
+\State $A_{1} = A$
+\For{$k = 1,2,\dots$ until converge}
+\State{$A_{k} = R_{k}\tp R_{k}$\qquad \textit{\%Cholesky factorization}}
+\State{$A_{k+1} = R_{k}R_{k}\tp$}
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+It can be seen, inductively, that
+\begin{equation}\label{eq.alg4-decomp}
+  A_{k+1} = (R_{k}\cdots R_{1})A(R_{k} \cdots R_{1})\inv.
+\end{equation}
+
+% Rutishauser 12.6
+The next result gives the convergence of the Cholesky LR
+algorithm~\ycite[1990, Sec.~12.6]{ruti90_lnm}.
+\begin{theorem}
+\label{thm.conv-chol-lr}
+If $A$ is symmetric positive definite, then for all the matrices $A_{k}$
+that generated iteratively by Algorithm~\ref{alg.clr}, one has
+\begin{equation}\notag
+  \lim_{n\to\infty} A_{k} = \diag(\lambda_{1},\dots,\lambda_{n}),
+\end{equation}
+where $\lambda_{1},\dots,\lambda_{n}$ are the eigenvalues of $A$.
+\end{theorem}
+% Note that, Rutishauser suggested that the eigenvalues in the limit matrix
+% are usually ordered, although they may have exceptions.
+
+\begin{proof}
+Since
+\begin{equation}\notag
+  A_{k+1} = R_{k}R_{k}\tp = R_{k}(R_{k}\tp R_{k})R_{k}\inv = R_{k}A_{k}R_{k}\inv,
+\end{equation}
+all matrices $A_{k}$ are similar to one another. Therefore, \emph{if} the
+limit matrix is diagonal matrix, then its diagonal elements are eigenvalues
+of $A$. Remain to prove that the limit matrix, $\lim_{k\to\infty}A_{k}$ is
+diagonal.
+
+Let $s_{\ell}\iter{k}$ denotes the sum of $\ell$ first diagonal elements of
+$A_{k}$, i.e.
+\begin{equation}\notag
+  s_{\ell}\iter{k} = \sum_{i=1}^{\ell}a_{ii}\iter{k},
+\end{equation}
+then certainly, by Proposition~\ref{prop.diag-posi},
+\begin{equation}\notag
+  0 < s_{1}\iter{k} < s_{2}\iter{k} < \cdots < s_{n-1}\iter{k} <s_{n}\iter{k},
+\end{equation}
+where $\tr(A) = s = s_{n}\iter{k}$ is independent of $k$, since the
+$\tr(A)$ is the summation of the eigenvalues of $A$. Using
+$A_{k} = R_{k}\tp R_{k}$, we have
+\begin{equation}\notag
+  a_{jj}\iter{k} = \sum_{i=1}^{j}(r_{ij}\iter{k})^{2},
+\end{equation}
+while from $A_{k+1} = R_{k}R_{k}\tp$, we have
+\begin{equation}\notag
+  a_{ii}\iter{k+1} = \sum_{j=i}^{n}(r_{ij}\iter{k})^{2}.
+\end{equation}
+Summing over $j$ and $i$ from $1$ to $\ell$, respectively, we have
+\begin{align*}
+  s_{\ell}\iter{k} &= \sum_{j=1}^{\ell}\sum_{i=1}^{j}(r_{ij}\iter{k})^{2} =
+                     \sum_{i=1}^{\ell}\sum_{j=i}^{\ell}(r_{ij}\iter{k})^{2},\\
+  s_{\ell}\iter{k+1} &= \sum_{i=1}^{\ell}\sum_{j=i}^{n}(r_{ij}\iter{k})^{2},
+\end{align*}
+and thus
+\begin{equation}\label{eq.trace-diff}
+  s_{\ell}\iter{k+1} - s_{\ell}\iter{k} = \sum_{i=1}^{\ell} \sum_{j=\ell +
+  1}^{n} (r_{ij}\iter{k})^{2}.
+\end{equation}
+Thus, the sequence $\{s_{\ell}\iter{k}\}$ is monotone in $k$, more
+importantly, the sequence is bounded by $\tr(A)$, hence it must converge.
+By \eqref{eq.trace-diff}, we have
+\begin{equation}\notag
+  s_{\ell}\iter{k+1} - s_{\ell}\iter{k} = \sum_{i=1}^{\ell} \sum_{j=\ell +
+  1}^{n} (r_{ij}\iter{k})^{2}  \to 0,
+\end{equation}
+which implies $r_{ij}\iter{k}\to 0$ for $i = 1,\dots,\ell$ and
+$j = \ell + 1,\dots,n$. Since This is true for all $\ell$, we have
+\begin{equation}\label{eq.upper=0}
+  \lim_{n\to\infty} r_{ij}\iter{k}  = 0 \quad \text{for $i < j$}.
+\end{equation}
+Moreover, consider the difference
+\begin{equation}\notag
+  s_{\ell}\iter{k} - s_{\ell - 1}\iter{k} = a_{\ell}\iter{k} =
+  \sum_{i=1}^{\ell} (r_{i\ell}\iter{k})^{2}.
+\end{equation}
+As $k\to\infty$, for all $i < j$, $r_{ij} = 0$, therefore
+\begin{equation}\label{eq.diag-exist}
+  \lim_{k\to\infty} (s_{\ell}\iter{k} - s_{\ell - 1}\iter{k})
+  = \lim_{k \to \infty}(r_{\ell\ell}\iter{k})^{2}.
+\end{equation}
+Hence, $\lim_{k\to\infty}R_{k}$ exist by~\eqref{eq.diag-exist} and is a
+diagonal matrix by~\eqref{eq.upper=0}. Finally,
+\begin{equation}\notag
+  \lim_{n\to\infty} A_{k} = \lim_{k\to\infty}R_{k}\tp R_{k}
+\end{equation}
+is clearly diagonal.
+\end{proof}
+
+\subsection{Problem}
+\bf{I will now formulate a problem that I encountered.}
+From the relationship between $A_{k+1}$ and $A$, 
+\begin{equation}\notag
+  A_{k + 1} = (R_{k}\cdots R_{1}) A (R_{k} \cdots R_{1})\inv,
+\end{equation}
+we have
+\begin{equation}\notag
+  A_{1} = (R_{1}\inv \cdots R_{k}\inv)A_{k+1} (R_{k}\cdots R_{1}).
+\end{equation}
+Then by Theorem~\ref{thm.conv-chol-lr}, we take the limits at both sides
+and have
+\begin{equation}\notag
+  A_{1} = T\inv\varLambda T,\qquad
+  T = \lim_{k\to\infty} (R_{k}\cdots R_{1}), \quad
+  \varLambda = \lim_{k\to\infty} A_{k+1}.
+\end{equation}
+
+\emph{However, $T$, $T\inv$ and $\varLambda$ are all upper triangular, then
+why the resulting matrix is a full matrix? Since no matter how we taking
+the limit (i.e. adding $R_{k+1},R_{k+2},\dots$ to $P$), the matrix $T$ will
+remain its triangular structure.}
+
+Moreover, since $A$ is symmetric positive definite, then it is unitarily
+diagonalizable, $A = Q\varLambda Q\tp$, where $Q$ is unitary and
+$\varLambda$ is a diagonal matrix with eigenvalues of $A$ on its diagonal.
+On the other hands, from previous construction,
+we have $A = T\varDelta T\inv$, where $T$ is upper triangular.
+Therefore, we have
+\begin{equation}\notag
+  T\varDelta T\inv = Q \varLambda Q\ctp.
+\end{equation}
+We can permute the matrix $Q$ such that $\varLambda = \varDelta$, and
+\begin{equation}\notag
+  T\varDelta T\inv = Q \varDelta Q\ctp, \quad \implies \quad
+  \varDelta = T\inv Q \varDelta Q\ctp T.
+\end{equation}
+This implies $T\inv Q = Q\ctp T = I$, and gives $T = Q$.
+\emph{But does this told us that $T$ will converge to a unitary matrix?}
+
+\subsection{Practical Consideration of Cholesky LR Algorithm}
+\label{sec.pract-cons-chol}
+Purely using Algorithm~\ref{alg.clr} is not feasible to construct the
+eigendecomposition.
+
+From Section~\ref{sec.chol-lr-algor}, we see that all the $A_{k}$ have the
+same eigenvalues since they are all similar. Moreover, the products,
+\begin{equation}\notag
+  M_{k} = R_{k}\cdots R_{1}, \quad \text{and}\quad
+  N_{k} = R_{1}\tp \cdots R_{k}\tp
+\end{equation}
+are the transformation matrices which transform $A_{1}$ into $A_{k+1}$,
+namely
+\begin{equation}\notag
+  A_{k+1} = M_{k} A_{1} M_{k}\inv = N_{k}\inv A_{1} N_{k}.
+\end{equation}
+
+Using the rule $R_{k}\tp R_{k} = R_{k-1} R_{k-1}\tp$ from
+Algorithm~\ref{alg.clr}, we have the expression
+\begin{equation}\notag
+  R_{k}\tp R_{k} \cdots R_{1}
+  = R_{k-1}R_{k-2} \cdots R_{3}R_{2}R_{1} R_{1}\tp R_{1},
+\end{equation}
+and now, we form the product,
+\begin{equation}\label{eq.trans-product-chol}
+  N_{k} M_{k} = R_{1}\tp \cdots R_{k}\tp R_{k}\cdots R_{1} = (R_{1}\tp R_{1})^{k}.
+\end{equation}
+Notice that, $N_{k}$ and $M_{k}$ are lower and upper triangular matrices
+respectively, and the diagonal entries of these matrices are positive.
+Therefore the $k$th transformation matrices are the Cholesky
+factors of $A^{k}$.
+
+Due to the slow convergence of the Cholesky LR algorithm,
+$M_{k}$ or $N_{k}$ is impossible to form in practice via Cholesky
+factorization of $A^{k}$ where $k$ is the number of iterations. 
+We will denote $\off(A)$ as
+\begin{equation}\notag
+  \off(A) = \sqrt{\sum_{i = 1}^{n} \sum_{j = 1, j \neq i}^{n}
+  a_{ij}^{2}},\qquad A \in \R\nn,
+\end{equation}
+which is the Frobenius norm of the off diagonal entries of $A$.
+Here is a simple program that implements the Algorithm~\ref{alg.clr}, 
+\begin{lstlisting}
+function [i,A] = chol_lr(A)
+%CHOL_LR Cholesky LR iteration for diagonalization.
+maxiter = 1e3; n = size(A,1); tol = eps/2;
+for i = 1:maxiter
+  R = chol(A); % A = R' * R;
+  A = R * R';
+  if off(A) <= tol * n
+    break;
+  end
+end 
+end
+\end{lstlisting}
+We test the function using a $5\times 5$ symmetric positive definite matrix
+$A$ with $\kappa(A) = 5$ generated by \texttt{gallery('randsvd')} with
+different modes.
+In addition, we fixed the random number generator by \texttt{rng(1)}.
+
+\begin{table}[H]
+\centering
+\caption{Iterations required for \inline{chol_lr} to converge on different 
+  test matrices.}
+\label{table.iter-5by5}
+\begin{tabular}{lc} \toprule
+  Test matrix & Iterations required \\\midrule
+  \texttt{gallery("randsvd",5,-5,1)} & 46 \\
+  \texttt{gallery("randsvd",5,-5,2)} & 45 \\
+  \texttt{gallery("randsvd",5,-5,3)} & 175 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+The results from Table~\ref{table.iter-5by5} show that even for such a
+small and well-conditioned matrix, the algorithm requires about 50
+iterations to converge.
+If we concentrated on mode 1, the transformation matrix will become
+the Cholesky factor of $A^{46}$.
+Let us denote the eigenvalues of $A$ by
+$\lambda_{1}(A) \ge \lambda_{2}(A) \ge \cdots \ge \lambda_{n}(A) > 0$.
+Consider the 2-norm condition number of $A$
+\begin{equation}\notag
+  \kappa_{2}(A) = \frac{\sigma_{1}(A)}{\sigma_{n}(A)}
+  = \frac{\lambda_{1}(A)}{\lambda_{n}(A)},
+\end{equation}
+where the final equality is due to $A$ being a symmetric positive definite 
+matrix. 
+Let us consider the eigenvalues of $A^{46}$.
+Let $A = Q\varLambda Q\ctp$ be its eigendecomposition, then 
+\begin{equation}\notag
+  A^{46} = Q \varDelta Q\ctp, \qquad
+  \varDelta =
+  \begin{bmatrix}
+    \lambda_{1}(A)^{46} &  &  &  \\
+                        & \lambda_{2}(A)^{46} & &  \\
+                        & & \ddots & \\
+                        & & & \lambda_{n}(A)^{46}
+  \end{bmatrix}.
+\end{equation}
+Therefore, $\kappa(A^{46}) = (\lambda_{1}(A)/\lambda_{n}(A))^{46}$ will be
+extremely large if $\lambda_{1}(A)/\lambda_{n}(A) > 1$.
+This implies that the computed Cholesky factors of $A^{46}$ can be very
+inaccurate due to its ill-conditioning. This is assured by our previous
+experiments: for the matrix generated by
+\texttt{gallery('randsvd',5,-5,1)}, the \inline{chol_lr} requires 46
+iterations to converge.
+Then, the condition number of $A^{46}$ will be about $\num{5.1}{18}$.
+By calling \inline{chol}, we observe that $A^{46}$ lost its positive
+definiteness due to its high condition number. 
+
+An alternative way of computing the transformation matrices will be
+accumulate them during the iteration,
+\begin{algorithm}[H]
+\caption{Cholesky LR algorithm for $A\in\R\nn$. The algorithm will
+  accumulate upper triangular matrices $T_{1}$ and $T_{2}$ such that the
+  output matrix can be written as $\wt A = T_{1} A T_{2}$.}
+\label{alg.chol-lr-acc-upper}
+\begin{algorithmic}[1]
+\State{$A_{1} = A, P = I$}
+\For{$k = 1,2,\dots,$ until converged}
+\State{$A_{k} = R_{k}\tp R_{k}$}
+\State{$T_{1} = R_{k}T_{1}$}
+\State{$T_{2} = T_{2} R_{k}\inv$}
+\State{$A_{k+1} = R_{k}R_{k}\tp$}
+\If {$\off(A_{k}) \le nu\norm{A_{1}}$}
+\State{\textbf{Break}}
+\EndIf
+\EndFor
+\State{$\wt A = A_{k+1}$}
+\end{algorithmic}
+\end{algorithm}
+If the iteration converged after $k$ steps, we have
+\begin{equation}\notag
+  \wt A = T_{1}AT_{2}, \qquad \wt A = A_{k+1},
+  \quad T_{1} = R_{k}\cdots R_{1},
+  \quad T_{2} = R_{1}\inv \cdots R_{k}\inv.
+\end{equation}
+which is the same as \eqref{eq.alg4-decomp}.
+
+We would like to obtain a lower bound for $\kappa_{2}(T_{1})$.
+From \eqref{eq.trans-product-chol}, $T_{1}\tp T_{1} = A^{k}$, and consider
+the condition number of $A^{k}$ using any consistent norm,
+\begin{align*}
+  \kappa(A^{k}) & = \norm{A^{k}} \norm{(A^{k})\inv} \\
+                & = \norm{T_{1}\tp T_{1}} \norm{T_{1}\inv (T_{1}\inv)\tp} \\
+                & \le \norm{T_{1}}\norm{T_{1}}\norm{T_{1}\inv}\norm{T_{1}\inv} \\
+                & = \kappa(T_{1})^{2}.
+\end{align*}
+This gives $\kappa(T_{1}) \ge \sqrt{\kappa(A^{k})}$. From previous
+analysis, $\kappa(A^{k})$ can be extremely large which may cause $T_{1}$
+and $T_{2}$ become ill-conditioned.
+
+We can conduct numerical experiments by applying
+Algorithm~\ref{alg.chol-lr-acc-upper} to the test matrices in
+Table~\ref{table.iter-5by5}.
+
+\begin{table}[H]
+\centering
+\caption{Condition of accumulated triangular matrix $T_1$ from
+  applying Algorithm~\ref{alg.chol-lr-acc-upper} to different test
+  matrices and the error $\norm{T_{1}AT_{2}-\wt A}$.}
+\label{table.condition-of-trig}
+\begin{tabular}{lcc} \toprule
+  Test Matrix & $\kappa_{2}(T_{1})$  & $\norm{T_{1}AT_{2}-\wt A}$ \\ \midrule
+  \texttt{gallery("randsvd",5,-5,1)} & $\num{1.2}{16}$ & $\num{5.4}{0}$\\
+  \texttt{gallery("randsvd",5,-5,2)} & $\num{5.3}{15}$ & $\num{1.7}{0}$\\
+  \texttt{gallery("randsvd",5,-5,3)} & $\num{1.4}{61}$ & $\num{1.1}{46}$\\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{table.condition-of-trig} presents the condition number for the 
+accumulated $T_{1}$ and we observe that these are too ill-conditioned to
+work with. Moreover, we cannot guarantee the equality $\wt A = T_{1}AT_{2}$
+in practice due to the ill-conditioning of $T_{1}$.
+
+We can do the same experiments using quadruple precision via the MATLAB
+package, Symbolic Math Toolbox.
+\footnote{Simple examples of using quadruple precision in MATLAB can be
+  found at
+  \url{https://nhigham.com/2017/08/31/how-fast-is-quadruple-precision-arithmetic/}}  
+The results are perfect for mode 1 and 2 in the sense that 
+\begin{equation}\notag
+  T_{1}T_{2} = T_{2}T_{1} = I, \quad \wt A = T_{1} A T_{2}.
+\end{equation}
+However, for mode 3, due to this extreme ill-conditioned system, the
+quadruple precision does not improve the results.
+The experiment shows that after 70 iterations,
+$T_{1}$ is no longer acted as the inverse of $T_{2}$ in the sense that
+$\norm{T_{1} T_{2} - I} \ge nu$.
+
+To improve this algorithm and stick at using Cholesky factorization and the
+matrix multiplication, we should speed up the convergence by introducing shifts.
+% However, I am pessimistic for this problem since the it is no point for
+% us to use a potentially "ill-conditioned" algorithm if there exists a QR
+% algorithm.
+
+\begin{mybox}
+I don't think there is a way of cooperate Cholesky LR iteration and the
+Jacobi algorithm due to the Cholesky LR iteration is not using unitarily
+similar transformations. Moreover, the ill-conditioned triangular
+transformation matrices are also the problem. In the literature, both the
+original paper by Rutishauser~\ycite[1958]{ruti58} and his lecture notes
+\ycite[1990]{ruti90_lnm} are suggesting that LR algorithm is used for 
+determining the eigenvalues only.
+\end{mybox}
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "do"
+%%% End:

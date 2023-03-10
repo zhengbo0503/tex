@@ -9,11 +9,12 @@
 
 %% redefine \emph and \bf such that they are colored and can be easily
 %% transformed back to normal \emph and \bf
-\renewcommand{\emph}[1]{\textit{\color{purple} #1}}
-\renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+% \renewcommand{\emph}[1]{\textit{\color{purple} #1}}
+% \renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
+\renewcommand{\bf}[1]{\textbf{#1}}
 
 
-% \includeonly{background}
+% \includeonly{lralg}
 
 \begin{document}
 \maketitle
@@ -25,6 +26,13 @@
 
 \include{introduction}
 \include{background}
+\include{lralg}
+
+
+
+%% APPENDICES
+\appendix
+\include{appendices}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,10 +41,6 @@
 \bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
 \bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
   /Users/clement/Dropbox/bibtex/ref.bib}
-%% APPENDICES
-\appendix
-\include{appendices}
-
 
 
 \end{document}

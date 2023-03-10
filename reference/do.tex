@@ -1,9 +1,9 @@
 \documentclass{article}
-\def\ntitle {Template}
+\def\ntitle {Reference List}
 % \def\nauthor{ } % default author is Zhengbo Zhou
 % \def\notes{ } % default is the submitted version
 % \def\ndate{ } % default is today's date
-\def\needcrop{ } % crop for easy previewing
+% \def\needcrop{ } % crop for easy previewing
 % \def\fancysec{ } % section font become fancier 
 \input{/Users/clement/Dropbox/bibtex/clem.tex}
 
@@ -12,9 +12,12 @@
 \renewcommand{\emph}[1]{\textit{\color{purple} #1}}
 \renewcommand{\bf}[1]{\textsf{\bfseries \color{purple} #1}}
 
+\usepackage{fourier}
+
+
 \begin{document}
 \maketitle
-\tableofcontents
+% \tableofcontents
 \thispagestyle{firstpage} 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN ARTICLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -28,7 +31,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliographies %%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{/Users/clement/Dropbox/bibtex/nj-plain}
-\bibliography{/Users/clement/Dropbox/bibtex/strings.bib, /Users/clement/Dropbox/bibtex/ref.bib} 
+\bibliography{/Users/clement/Dropbox/bibtex/strings.bib,
+  /Users/clement/Dropbox/bibtex/misc.bib,
+  /Users/clement/Dropbox/bibtex/ref.bib} 
 \nocite{*}
 
 %% APPENDICES

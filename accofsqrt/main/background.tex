@@ -110,8 +110,9 @@ where $C = A(BA)^{-1/2}$.
 \end{theorem}
 
 \begin{proof}
-It is obvious that, $AB$ share the same eigenvalues as $BA$~\ycite[2013,
-Thm.~1.3.22]{hojo13_ma}. Then consider the matrix
+It is obvious that,\comment{Not so obvious, try to be more precise} $AB$
+share the same  eigenvalues as $BA$~\ycite[2013, Thm.~1.3.22]{hojo13_ma}.
+Then consider the matrix 
 $P = \begin{bsmallmatrix} 0 & A \\ B & 0 \end{bsmallmatrix}$, and this
 matrix certainly will not have eigenvalues on the imaginary axis, otherwise
 $P^{2} = \begin{bsmallmatrix} AB & 0 \\ 0 & BA \end{bsmallmatrix}$ will
@@ -306,6 +307,7 @@ A = Q * T * Q';
 fun = @(x) x/abs(x); 
 k_sign = funm_condest_fro(A,fun); % estimate the condition number
 \end{lstlisting}
+
 The functions \inline{signm_newton} at line 9 and \inline{funm_condest_fro}
 at line 11 are from \cite{high-mft}. With $d = 1/3$, the approximate
 condition number is $\kappa_{\sign} \approx \text{2.1e8}$. However,
